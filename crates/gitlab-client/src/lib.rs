@@ -9,6 +9,7 @@
 //!
 //! ```no_run
 //! use gitlab_client::GitlabClient;
+//! use gitlab_client::prelude::*; // endpoint extension traits
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Reads GITLAB_URL and GITLAB_PAT from the environment.
@@ -20,13 +21,22 @@
 //! ```
 
 mod client;
+mod encode;
 mod endpoints;
 mod error;
 mod pagination;
 
 pub use client::GitlabClient;
+pub use endpoints::{
+    IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, ProjectEndpoints, UserEndpoints,
+};
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
+
+/// Bring every endpoint extension trait into scope in one `use`.
+pub mod prelude {
+    pub use crate::endpoints::{IssueEndpoints, ProjectEndpoints, UserEndpoints};
+}
 
 // Re-export the wire shapes so callers need only depend on gitlab-client.
 pub use gitlab_model as model;
