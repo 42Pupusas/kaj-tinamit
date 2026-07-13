@@ -1,0 +1,12 @@
+[package]
+name = "gitlab-client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Blocking, type-safe GitLab REST API v4 client tying gitlab-http + gitlab-model together."
+
+[dependencies]
+gitlab-http = { path = "../gitlab-http" }
+gitlab-model = { path = "../gitlab-model" }
+json-bourne = { workspace = true }

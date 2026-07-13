@@ -1,0 +1,23 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["cuarentaydos"]
+
+[workspace.dependencies]
+# In-house crates (tooling/) — JSON + HTTP stack, zero crates.io where possible.
+json-bourne = { path = "../bourne/crates/bourne", features = ["derive"] }
+xibalba-client = { path = "../xibalba/xibalba-client" }
+xibalba-proto = { path = "../xibalba/xibalba-proto" }
+# rustls-rustcrypto: the crates.io 0.0.2-alpha builds against rustls 0.23.
+# (The vendored tooling/ copy targets an unreleased rustls 0.24-dev via a
+# workspace patch that doesn't apply here.)
+rustls-rustcrypto = "0.0.2-alpha"
+
+# TLS — the only crates.io deps, matching the in-house HTTP stack.
+rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "custom-provider"] }
+webpki-roots = "1"

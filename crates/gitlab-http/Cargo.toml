@@ -1,0 +1,14 @@
+[package]
+name = "gitlab-http"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Blocking HTTP transport over the in-house xibalba stack with a rustls connector."
+
+[dependencies]
+xibalba-client = { workspace = true }
+xibalba-proto = { workspace = true }
+rustls = { workspace = true }
+rustls-rustcrypto = { workspace = true }
+webpki-roots = { workspace = true }

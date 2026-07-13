@@ -1,0 +1,10 @@
+[package]
+name = "gitlab-model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Type-safe wire shapes for the GitLab REST API v4, (de)serialized via json-bourne."
+
+[dependencies]
+json-bourne = { workspace = true }
