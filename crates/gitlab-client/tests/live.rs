@@ -37,6 +37,57 @@ fn projects_smoke() {
 
 #[test]
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn events_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let events = client.events(None).expect("events request failed");
+    eprintln!("authenticated user events: {}", events.len());
+    for e in events.iter().take(5) {
+        eprintln!(
+            "  {} {} {}",
+            e.created_at.as_deref().unwrap_or("?"),
+            e.action_name.as_deref().unwrap_or("?"),
+            e.target_type.as_deref().unwrap_or("")
+        );
+    }
+}
+
+/// Walks the first membership project and exercises the project-scoped read
+/// endpoints (commits, merge requests, milestones, project events) against
+/// whatever real data is there.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn project_scoped_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects request failed");
+    let project = projects.first().expect("need at least one project");
+    let pid = i64::from(project.id);
+    eprintln!(
+        "exercising project #{} {}",
+        pid,
+        project.path_with_namespace.as_deref().unwrap_or("?")
+    );
+
+    let commits = client.commits(pid, None).expect("commits request failed");
+    eprintln!("  commits: {}", commits.len());
+
+    let mrs = client
+        .merge_requests(pid, &gitlab_client::MergeRequestQuery::new())
+        .expect("merge_requests request failed");
+    eprintln!("  merge requests: {}", mrs.len());
+
+    let milestones = client
+        .project_milestones(project.id)
+        .expect("project_milestones request failed");
+    eprintln!("  milestones: {}", milestones.len());
+
+    let pevents = client
+        .project_events(pid, None)
+        .expect("project_events request failed");
+    eprintln!("  project events: {}", pevents.len());
+}
+
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn issues_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
     let query = IssueQuery::new()

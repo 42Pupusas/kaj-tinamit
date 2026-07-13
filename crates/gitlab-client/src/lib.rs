@@ -28,14 +28,19 @@ mod pagination;
 
 pub use client::GitlabClient;
 pub use endpoints::{
-    IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, ProjectEndpoints, UserEndpoints,
+    CommitEndpoints, EventEndpoints, IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter,
+    MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints, ProjectEndpoints, UserEndpoints,
+    WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
 
 /// Bring every endpoint extension trait into scope in one `use`.
 pub mod prelude {
-    pub use crate::endpoints::{IssueEndpoints, ProjectEndpoints, UserEndpoints};
+    pub use crate::endpoints::{
+        CommitEndpoints, EventEndpoints, IssueEndpoints, MergeRequestEndpoints, MilestoneEndpoints,
+        ProjectEndpoints, UserEndpoints, WikiEndpoints,
+    };
 }
 
 // Re-export the wire shapes so callers need only depend on gitlab-client.
