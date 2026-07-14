@@ -5,7 +5,7 @@ use json_bourne::{FromJson, ToJson};
 /// A project or group label. The same shape is returned by both the project
 /// (`/projects/:id/labels`) and group (`/groups/:id/labels`) endpoints; the
 /// count fields are only populated when `with_counts=true` is requested.
-#[derive(Debug, FromJson, ToJson, Clone)]
+#[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[bourne(deny_unknown_fields = false)]
 pub struct Label {
     pub id: i64,

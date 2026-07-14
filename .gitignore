@@ -1,2 +1,8 @@
 /target
 Cargo.lock
+
+# cargo-fuzz build artifacts + generated corpus/coverage
+crates/*/fuzz/target/
+crates/*/fuzz/corpus/
+crates/*/fuzz/artifacts/
+crates/*/fuzz/coverage/

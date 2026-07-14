@@ -8,3 +8,11 @@ description = "Type-safe wire shapes for the GitLab REST API v4, (de)serialized 
 
 [dependencies]
 json-bourne = { workspace = true }
+
+[dev-dependencies]
+proptest = "1"
+divan = "0.1"
+
+[[bench]]
+name = "parse"
+harness = false
