@@ -86,6 +86,44 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Deploy keys + Deploy tokens categories via the first
+/// project the account can reach. Both are often empty; endpoints must at
+/// least parse a valid (empty) response.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn deploy_keys_and_tokens_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects request failed");
+
+    let mut key_hit = false;
+    for p in &projects {
+        let pid = i64::from(p.id);
+        if let Ok(keys) = client.project_deploy_keys(pid)
+            && let Some(first) = keys.first()
+        {
+            eprintln!("project #{pid} deploy keys: {}", keys.len());
+            let one = client
+                .project_deploy_key(pid, first.id)
+                .expect("project_deploy_key failed");
+            assert_eq!(one.id, first.id);
+            key_hit = true;
+            break;
+        }
+    }
+    if !key_hit {
+        eprintln!("no project deploy keys found");
+    }
+
+    // Deploy tokens: exercise the endpoint on the first project (needs
+    // Maintainer+; may 403, in which case we just report it).
+    if let Some(project) = projects.first() {
+        match client.project_deploy_tokens(i64::from(project.id)) {
+            Ok(tokens) => eprintln!("project #{} deploy tokens: {}", project.id, tokens.len()),
+            Err(e) => eprintln!("project deploy tokens not accessible: {e}"),
+        }
+    }
+}
+
 /// Exercises the Notes category: find an issue with notes and round-trip
 /// the list + a single note.
 #[test]

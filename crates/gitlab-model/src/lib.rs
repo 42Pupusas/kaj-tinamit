@@ -10,6 +10,7 @@
 
 pub mod ci;
 pub mod commit;
+pub mod deploy;
 pub mod deployment;
 pub mod event;
 pub mod group;
@@ -27,6 +28,7 @@ pub mod wiki;
 
 pub use ci::*;
 pub use commit::*;
+pub use deploy::*;
 pub use deployment::*;
 pub use event::*;
 pub use group::*;

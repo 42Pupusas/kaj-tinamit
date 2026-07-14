@@ -5,6 +5,7 @@
 
 mod ci;
 mod commits;
+mod deploy;
 mod deployments;
 mod events;
 mod groups;
@@ -23,6 +24,7 @@ mod wikis;
 
 pub use ci::{JobEndpoints, PipelineEndpoints, PipelineQuery};
 pub use commits::CommitEndpoints;
+pub use deploy::{DeployKeyEndpoints, DeployTokenEndpoints};
 pub use deployments::{DeploymentEndpoints, EnvironmentEndpoints};
 pub use events::EventEndpoints;
 pub use groups::{GroupEndpoints, MemberEndpoints};

@@ -5,7 +5,8 @@
 //! regressions in `json-bourne` and in our derive usage.
 
 use gitlab_model::{
-    Blob, Branch, CommitWithDiffs, Contributor, Deployment, Discussion, Environment, GitlabCommit,
+    Blob, Branch, CommitWithDiffs, Contributor, DeployKey, DeployToken, Deployment, Discussion,
+    Environment, GitlabCommit,
     GitlabEvent, GitlabGroup, GitlabIssue, GitlabNote, GitlabProject, GitlabUser, Job, Label,
     Member,
     MergeRequest, MergeRequestChanges, Milestone, PipelineDetail, PipelineSummary,
@@ -341,6 +342,22 @@ bench_parse!(
     "created_at":"2013-10-02T09:22:45Z","updated_at":"2013-10-02T10:22:45Z","system":false,
     "noteable_id":377,"noteable_type":"Issue","project_id":5,"noteable_iid":377,
     "resolvable":false,"confidential":false,"internal":false}"#
+);
+
+bench_parse!(
+    deploy_key,
+    DeployKey,
+    r#"{"id":1,"title":"Public key","key":"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDNJAkI",
+    "fingerprint":"4a:9d:64:15:ed:3a:e6:07","fingerprint_sha256":"SHA256:Jrs3LD1Ji30xNLtTVf9N",
+    "created_at":"2013-10-02T10:12:29Z","expires_at":null,"can_push":false}"#
+);
+
+bench_parse!(
+    deploy_token,
+    DeployToken,
+    r#"{"id":1,"name":"MyToken","username":"gitlab+deploy-token-1",
+    "expires_at":"2020-02-14T00:00:00.000Z","revoked":false,"expired":false,
+    "scopes":["read_repository","read_registry"]}"#
 );
 
 // ---------------------------------------------------------------------------

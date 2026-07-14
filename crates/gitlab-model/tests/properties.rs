@@ -169,6 +169,11 @@ round_trip!(runner_manager, RunnerManager);
 round_trip!(note_author, NoteAuthor);
 round_trip!(gitlab_note, GitlabNote);
 
+// deploy keys + tokens
+round_trip!(deploy_key_project, DeployKeyProject);
+round_trip!(deploy_key, DeployKey);
+round_trip!(deploy_token, DeployToken);
+
 // ci
 round_trip!(ci_status, CiStatus);
 round_trip!(ci_user, CiUser);
