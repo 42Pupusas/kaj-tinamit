@@ -6,6 +6,68 @@
 use gitlab_model::{CommitDiff, CommitStatus, CommitWithDiffs, GitlabCommit};
 use json_bourne::{FromJson, ToJson};
 
+/// Body for setting a commit's build status
+/// (`POST /projects/:id/statuses/:sha`). `state` is required (one of
+/// `pending`, `running`, `success`, `failed`, `canceled`).
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+pub struct CommitStatusUpdate {
+    pub state: String,
+    #[bourne(skip_if_none, rename = "ref")]
+    pub ref_name: Option<String>,
+    #[bourne(skip_if_none)]
+    pub name: Option<String>,
+    #[bourne(skip_if_none)]
+    pub target_url: Option<String>,
+    #[bourne(skip_if_none)]
+    pub description: Option<String>,
+    #[bourne(skip_if_none)]
+    pub coverage: Option<f64>,
+    #[bourne(skip_if_none)]
+    pub pipeline_id: Option<i64>,
+}
+
+impl CommitStatusUpdate {
+    /// A status with the given state (e.g. `"success"`).
+    #[must_use]
+    pub fn new(state: impl Into<String>) -> Self {
+        Self {
+            state: state.into(),
+            ref_name: None,
+            name: None,
+            target_url: None,
+            description: None,
+            coverage: None,
+            pipeline_id: None,
+        }
+    }
+
+    /// Name the check (context), so repeated posts update the same entry.
+    #[must_use]
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = Some(name.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_ref(mut self, ref_name: impl Into<String>) -> Self {
+        self.ref_name = Some(ref_name.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_target_url(mut self, target_url: impl Into<String>) -> Self {
+        self.target_url = Some(target_url.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+}
+
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
@@ -229,6 +291,19 @@ pub trait CommitEndpoints {
         sha: &str,
         branch: &str,
     ) -> Result<CommitWithDiffs, Error>;
+
+    /// Post (or update) a build status against a commit `sha`. Returns the
+    /// resulting status entry.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn set_commit_status(
+        &self,
+        project_id: i64,
+        sha: &str,
+        status: &CommitStatusUpdate,
+    ) -> Result<CommitStatus, Error>;
 }
 
 impl CommitEndpoints for GitlabClient {
@@ -308,6 +383,18 @@ impl CommitEndpoints for GitlabClient {
             &BranchBody {
                 branch: branch.to_string(),
             },
+        )
+    }
+
+    fn set_commit_status(
+        &self,
+        project_id: i64,
+        sha: &str,
+        status: &CommitStatusUpdate,
+    ) -> Result<CommitStatus, Error> {
+        self.post(
+            &format!("api/v4/projects/{project_id}/statuses/{sha}"),
+            status,
         )
     }
 }

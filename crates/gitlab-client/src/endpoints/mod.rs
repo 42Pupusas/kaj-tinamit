@@ -36,7 +36,7 @@ mod wikis;
 pub use award_emoji::AwardEmojiEndpoints;
 pub use boards::BoardEndpoints;
 pub use ci::{JobEndpoints, PipelineEndpoints, PipelineInput, PipelineQuery};
-pub use commits::{CommitAction, CommitEndpoints, CreateCommit};
+pub use commits::{CommitAction, CommitEndpoints, CommitStatusUpdate, CreateCommit};
 pub use deploy::{CreateDeployKey, CreateDeployToken, DeployKeyEndpoints, DeployTokenEndpoints};
 pub use deployments::{DeploymentEndpoints, EnvironmentEndpoints};
 pub use epics::{CreateEpic, EpicEndpoints, UpdateEpic};
@@ -58,7 +58,7 @@ pub use notes::NoteEndpoints;
 pub use pipeline_schedules::{
     CreatePipelineSchedule, PipelineScheduleEndpoints, UpdatePipelineSchedule,
 };
-pub use projects::ProjectEndpoints;
+pub use projects::{CreateProject, ProjectEndpoints, UpdateProject};
 pub use protected::ProtectedEndpoints;
 pub use releases::{CreateRelease, ReleaseEndpoints, UpdateRelease};
 pub use repository::{CommitFile, RepositoryEndpoints};
