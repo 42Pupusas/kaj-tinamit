@@ -195,6 +195,63 @@ round_trip!(job_pipeline, JobPipeline);
 round_trip!(job_runner, JobRunner);
 round_trip!(job, Job);
 
+// metadata + namespaces
+round_trip!(kas_metadata, KasMetadata);
+round_trip!(metadata, Metadata);
+round_trip!(namespace_listing, NamespaceListing);
+
+// protected branches / tags / environments
+round_trip!(access_rule, AccessRule);
+round_trip!(protected_branch, ProtectedBranch);
+round_trip!(protected_tag, ProtectedTag);
+round_trip!(protected_environment, ProtectedEnvironment);
+
+// award emoji
+round_trip!(award_emoji, AwardEmoji);
+
+// pipeline schedules
+round_trip!(schedule_pipeline, SchedulePipeline);
+round_trip!(pipeline_schedule, PipelineSchedule);
+
+// commit status
+round_trip!(commit_status, CommitStatus);
+
+// todos
+round_trip!(todo_action_name, TodoActionName);
+round_trip!(todo_state, TodoState);
+round_trip!(todo_project, TodoProject);
+round_trip!(todo, Todo);
+
+// search
+round_trip!(search_blob, SearchBlob);
+
+// issue statistics
+round_trip!(issue_counts, IssueCounts);
+round_trip!(issue_statistics_inner, IssueStatisticsInner);
+round_trip!(issue_statistics, IssueStatistics);
+
+// resource events
+round_trip!(label_event_action, LabelEventAction);
+round_trip!(resource_label_event, ResourceLabelEvent);
+round_trip!(state_event_state, StateEventState);
+round_trip!(resource_state_event, ResourceStateEvent);
+round_trip!(milestone_event_action, MilestoneEventAction);
+round_trip!(resource_milestone_event, ResourceMilestoneEvent);
+
+// epics
+round_trip!(epic_state, EpicState);
+round_trip!(epic, Epic);
+round_trip!(epic_issue, EpicIssue);
+
+// boards
+round_trip!(board_list, BoardList);
+round_trip!(board, Board);
+
+// iterations
+round_trip!(iteration_state, IterationState);
+round_trip!(iteration, Iteration);
+round_trip!(iteration_cadence, IterationCadence);
+
 // The numeric <-> named access-level mapping is total and invertible.
 proptest! {
     #[test]

@@ -5,6 +5,15 @@ use json_bourne::{FromJson, ToJson};
 
 use crate::ci::{CiStatus, CiUser};
 
+/// A proptest strategy yielding `Option<f64>` restricted to finite values.
+///
+/// Coverage is always a finite percentage; excluding NaN/inf keeps the JSON
+/// round-trip well-defined (those have no JSON representation).
+#[cfg(feature = "proptest")]
+fn finite_opt_f64() -> impl proptest::strategy::Strategy<Value = Option<f64>> {
+    proptest::option::of(-1e12f64..1e12f64)
+}
+
 /// A single commit status entry: one CI job or external check reported
 /// against a commit SHA.
 #[derive(Debug, FromJson, ToJson, Clone)]
@@ -24,6 +33,7 @@ pub struct CommitStatus {
     pub finished_at: Option<String>,
     #[bourne(default)]
     pub allow_failure: bool,
+    #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub coverage: Option<f64>,
     pub pipeline_id: Option<i64>,
     pub author: Option<CiUser>,

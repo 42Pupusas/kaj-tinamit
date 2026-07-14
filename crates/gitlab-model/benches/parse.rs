@@ -5,10 +5,12 @@
 //! regressions in `json-bourne` and in our derive usage.
 
 use gitlab_model::{
-    Blob, Branch, CommitWithDiffs, Contributor, DeployKey, DeployToken, Deployment, Discussion,
-    Environment, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabNote, GitlabProject,
-    GitlabUser, Job, Label, Member, MergeRequest, MergeRequestChanges, Milestone, PipelineDetail,
-    PipelineSummary, PipelineVariable, Release, RepositoryFile, Runner, RunnerDetail, Snippet, Tag,
+    AwardEmoji, Blob, Board, Branch, CommitStatus, CommitWithDiffs, Contributor, DeployKey,
+    DeployToken, Deployment, Discussion, Environment, Epic, GitlabCommit, GitlabEvent, GitlabGroup,
+    GitlabIssue, GitlabNote, GitlabProject, GitlabUser, IssueStatistics, Iteration, Job, Label,
+    Member, MergeRequest, MergeRequestChanges, Metadata, Milestone, NamespaceListing,
+    PipelineDetail, PipelineSchedule, PipelineSummary, PipelineVariable, ProtectedBranch, Release,
+    RepositoryFile, ResourceLabelEvent, Runner, RunnerDetail, SearchBlob, Snippet, Tag, Todo,
     TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
@@ -356,6 +358,118 @@ bench_parse!(
     r#"{"id":1,"name":"MyToken","username":"gitlab+deploy-token-1",
     "expires_at":"2020-02-14T00:00:00.000Z","revoked":false,"expired":false,
     "scopes":["read_repository","read_registry"]}"#
+);
+
+// ---------------------------------------------------------------------------
+// Remaining endpoint categories: metadata, governance, planning, and the
+// lighter reaction/audit shapes. One representative blob apiece.
+// ---------------------------------------------------------------------------
+
+bench_parse!(
+    metadata,
+    Metadata,
+    r#"{"version":"17.0.0","revision":"abcdef123","enterprise":true,
+    "kas":{"enabled":true,"version":"17.0.0","external_url":"wss://kas.example.com"}}"#
+);
+
+bench_parse!(
+    namespace_listing,
+    NamespaceListing,
+    r#"{"id":2,"name":"group1","path":"group1","kind":"group","full_path":"group1",
+    "parent_id":null,"avatar_url":null,"web_url":"https://example.com/groups/group1",
+    "billable_members_count":2,"plan":"default","trial":false}"#
+);
+
+bench_parse!(
+    protected_branch,
+    ProtectedBranch,
+    r#"{"id":1,"name":"main",
+    "push_access_levels":[{"access_level":40,"access_level_description":"Maintainers"}],
+    "merge_access_levels":[{"access_level":40,"access_level_description":"Maintainers"}],
+    "allow_force_push":false,"code_owner_approval_required":false}"#
+);
+
+bench_parse!(
+    commit_status,
+    CommitStatus,
+    r#"{"id":91,"sha":"18f3e63d","ref":"main","status":"success","name":"bundler:audit",
+    "target_url":"https://example.com/jobs/91","description":null,
+    "created_at":"2022-01-01T00:00:00Z","started_at":"2022-01-01T00:00:01Z",
+    "finished_at":"2022-01-01T00:00:10Z","allow_failure":true,"coverage":98.29,"pipeline_id":12}"#
+);
+
+bench_parse!(
+    pipeline_schedule,
+    PipelineSchedule,
+    r#"{"id":13,"description":"Nightly build","ref":"refs/heads/main","cron":"0 1 * * *",
+    "cron_timezone":"Asia/Tokyo","next_run_at":"2022-01-02T01:00:00Z","active":true,
+    "created_at":"2021-01-01T00:00:00Z","updated_at":"2021-06-01T00:00:00Z",
+    "owner":{"id":1,"username":"root","name":"Admin","state":"active"}}"#
+);
+
+bench_parse!(
+    award_emoji,
+    AwardEmoji,
+    r#"{"id":4,"name":"rocket","awardable_type":"Issue","awardable_id":80,
+    "user":{"id":2,"username":"alice","name":"Alice","state":"active"},
+    "created_at":"2016-06-15T10:09:34.206Z","updated_at":"2016-06-15T10:09:34.206Z"}"#
+);
+
+bench_parse!(
+    todo,
+    Todo,
+    r#"{"id":102,"action_name":"review_requested","target_type":"MergeRequest",
+    "target_url":"https://example.com/g/p/-/merge_requests/7","body":"Please review",
+    "state":"pending","created_at":"2021-01-02T09:00:00Z",
+    "project":{"id":3,"name":"widget","path_with_namespace":"group/widget"},
+    "author":{"id":2,"username":"alice","name":"Alice","state":"active"}}"#
+);
+
+bench_parse!(
+    search_blob,
+    SearchBlob,
+    r#"{"basename":"main","data":"fn main() {}\n","path":"src/main.rs",
+    "filename":"src/main.rs","id":null,"ref":"main","startline":1,"project_id":6}"#
+);
+
+bench_parse!(
+    issue_statistics,
+    IssueStatistics,
+    r#"{"statistics":{"counts":{"all":30,"closed":22,"opened":8}}}"#
+);
+
+bench_parse!(
+    resource_label_event,
+    ResourceLabelEvent,
+    r##"{"id":142,"created_at":"2021-01-02T09:00:00Z","resource_type":"Issue","resource_id":11,
+    "user":{"id":2,"username":"alice","name":"Alice","state":"active"},
+    "label":{"id":5,"name":"Doing","color":"#cc0033"},"action":"add"}"##
+);
+
+bench_parse!(
+    epic,
+    Epic,
+    r#"{"id":30,"iid":5,"group_id":7,"parent_id":null,"title":"Q3 Roadmap",
+    "description":"Portfolio epic","state":"opened","labels":["roadmap"],
+    "start_date":"2021-07-01","due_date":"2021-09-30","confidential":false,
+    "upvotes":3,"downvotes":0,"web_url":"https://example.com/groups/g/-/epics/5"}"#
+);
+
+bench_parse!(
+    board,
+    Board,
+    r##"{"id":1,"name":"Development","hide_backlog_list":false,"hide_closed_list":false,
+    "lists":[{"id":10,"position":1,"list_type":"label",
+    "label":{"id":5,"name":"Doing","color":"#cc0033"},"collapsed":false}]}"##
+);
+
+bench_parse!(
+    iteration,
+    Iteration,
+    r#"{"id":53,"iid":13,"group_id":5,"title":"Sprint 42","description":"Sprint","state":2,
+    "created_at":"2021-12-01T00:00:00Z","updated_at":"2021-12-01T00:00:00Z",
+    "start_date":"2021-12-06","due_date":"2021-12-17","iteration_cadence_id":3,
+    "web_url":"https://example.com/groups/g/-/iterations/13","sequence":42}"#
 );
 
 // ---------------------------------------------------------------------------

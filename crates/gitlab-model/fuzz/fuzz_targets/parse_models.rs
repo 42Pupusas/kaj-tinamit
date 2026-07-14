@@ -9,8 +9,10 @@
 //! Run: `cargo +nightly fuzz run parse_models`
 
 use gitlab_model::{
-    Blob, Branch, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser,
-    Job, Label, Member, MergeRequest, PipelineDetail, PipelineSummary, RepositoryFile, Tag,
+    AwardEmoji, Blob, Board, Branch, CommitStatus, Epic, GitlabCommit, GitlabEvent, GitlabGroup,
+    GitlabIssue, GitlabProject, GitlabUser, IssueStatistics, Iteration, Job, Label, Member,
+    MergeRequest, Metadata, NamespaceListing, PipelineDetail, PipelineSchedule, PipelineSummary,
+    ProtectedBranch, RepositoryFile, ResourceLabelEvent, ResourceStateEvent, SearchBlob, Tag, Todo,
     TreeEntry, WikiPage,
 };
 use json_bourne::parse;
@@ -37,6 +39,22 @@ fuzz_target!(|data: &[u8]| {
     let _ = parse::<GitlabEvent>(data);
     let _ = parse::<WikiPage>(data);
     let _ = parse::<Blob>(data);
+
+    // Metadata, governance, planning, and reaction/audit categories.
+    let _ = parse::<Metadata>(data);
+    let _ = parse::<NamespaceListing>(data);
+    let _ = parse::<ProtectedBranch>(data);
+    let _ = parse::<CommitStatus>(data);
+    let _ = parse::<PipelineSchedule>(data);
+    let _ = parse::<AwardEmoji>(data);
+    let _ = parse::<Todo>(data);
+    let _ = parse::<SearchBlob>(data);
+    let _ = parse::<IssueStatistics>(data);
+    let _ = parse::<ResourceLabelEvent>(data);
+    let _ = parse::<ResourceStateEvent>(data);
+    let _ = parse::<Epic>(data);
+    let _ = parse::<Board>(data);
+    let _ = parse::<Iteration>(data);
 
     // Arrays of the most common list types, as GitLab returns them.
     let _ = parse::<Vec<GitlabProject>>(data);
