@@ -146,6 +146,12 @@ round_trip!(deployment, Deployment);
 round_trip!(last_deployment, LastDeployment);
 round_trip!(environment, Environment);
 
+// runner
+round_trip!(runner, Runner);
+round_trip!(runner_project, RunnerProject);
+round_trip!(runner_detail, RunnerDetail);
+round_trip!(runner_manager, RunnerManager);
+
 // ci
 round_trip!(ci_status, CiStatus);
 round_trip!(ci_user, CiUser);

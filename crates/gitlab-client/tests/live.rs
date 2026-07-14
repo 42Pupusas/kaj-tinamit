@@ -86,6 +86,45 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Runners category: list accessible runners, then round-trip
+/// runner detail + managers for the first one; also project runners.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn runners_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let runners = client
+        .runners(&gitlab_client::RunnerQuery::new())
+        .expect("runners request failed");
+    eprintln!("accessible runners: {}", runners.len());
+    for r in runners.iter().take(5) {
+        eprintln!(
+            "  #{} [{}] {}",
+            r.id,
+            r.status.as_deref().unwrap_or("?"),
+            r.description.as_deref().unwrap_or("")
+        );
+    }
+
+    if let Some(first) = runners.first() {
+        let detail = client.runner(first.id).expect("runner detail failed");
+        assert_eq!(detail.id, first.id);
+        eprintln!(
+            "  runner {} type {:?}, {} projects, tags {:?}",
+            detail.id, detail.runner_type, detail.projects.len(), detail.tag_list
+        );
+        let managers = client.runner_managers(first.id).expect("runner_managers failed");
+        eprintln!("  managers: {}", managers.len());
+    }
+
+    // Project-scoped runners for the first project.
+    if let Some(project) = client.projects().expect("projects failed").first() {
+        let pr = client
+            .project_runners(i64::from(project.id))
+            .expect("project_runners failed");
+        eprintln!("project #{} runners: {}", project.id, pr.len());
+    }
+}
+
 /// Exercises the Environments + Deployments categories: walk projects to
 /// find one with environments/deployments, round-trip single fetches.
 #[test]

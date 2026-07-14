@@ -32,7 +32,8 @@ pub use endpoints::{
     IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, JobEndpoints, LabelEndpoints,
     MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints,
     PipelineEndpoints, PipelineQuery, ProjectEndpoints, ProjectSnippetEndpoints, ReleaseEndpoints,
-    RepositoryEndpoints, SnippetEndpoints, UserEndpoints, WikiEndpoints,
+    RepositoryEndpoints, RunnerEndpoints, RunnerQuery, SnippetEndpoints, UserEndpoints,
+    WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -43,7 +44,8 @@ pub mod prelude {
         CommitEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EventEndpoints, GroupEndpoints,
         IssueEndpoints, JobEndpoints, LabelEndpoints, MemberEndpoints, MergeRequestEndpoints,
         MilestoneEndpoints, PipelineEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
-        ReleaseEndpoints, RepositoryEndpoints, SnippetEndpoints, UserEndpoints, WikiEndpoints,
+        ReleaseEndpoints, RepositoryEndpoints, RunnerEndpoints, SnippetEndpoints, UserEndpoints,
+        WikiEndpoints,
     };
 }
 

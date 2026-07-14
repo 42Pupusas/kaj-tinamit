@@ -8,7 +8,7 @@ use gitlab_model::{
     Blob, Branch, CommitWithDiffs, Contributor, Deployment, Discussion, Environment, GitlabCommit,
     GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member,
     MergeRequest, MergeRequestChanges, Milestone, PipelineDetail, PipelineSummary, PipelineVariable,
-    Release, RepositoryFile, Snippet, Tag, TreeEntry, WikiPage, WikiPageList,
+    Release, RepositoryFile, Runner, RunnerDetail, Snippet, Tag, TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -311,6 +311,24 @@ bench_parse!(
     "deployable":{"id":664,"status":"success","stage":"deploy","name":"deploy","ref":"main",
     "tag":false,"commit":{"id":"a91957a8","short_id":"a91957a8","title":"Merge"},
     "pipeline":{"id":42,"ref":"main","sha":"a91957a8","status":"success"}}}"#
+);
+
+bench_parse!(
+    runner,
+    Runner,
+    r#"{"active":true,"paused":false,"description":"test-1-20150125","id":6,"ip_address":"",
+    "is_shared":false,"runner_type":"project_type","name":null,"online":true,"status":"online",
+    "job_execution_status":"idle"}"#
+);
+
+bench_parse!(
+    runner_detail,
+    RunnerDetail,
+    r#"{"id":6,"description":"test-1","active":true,"paused":false,"is_shared":false,
+    "runner_type":"project_type","status":"online","job_execution_status":"idle",
+    "contacted_at":"2016-01-25T16:39:48Z","access_level":"ref_protected","maximum_timeout":3600,
+    "tag_list":["ruby","mysql"],
+    "projects":[{"id":1,"name":"CE","path":"gitlab-foss","path_with_namespace":"gitlab-org/gitlab-foss"}]}"#
 );
 
 // ---------------------------------------------------------------------------
