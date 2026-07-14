@@ -28,17 +28,18 @@ mod pagination;
 
 pub use client::GitlabClient;
 pub use endpoints::{
-    AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CommitEndpoints, CreateIssue,
-    CreateLabel, CreateMergeRequest, CreateMilestone, CreateWikiPage, DeployKeyEndpoints,
-    DeployTokenEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints, EventEndpoints,
-    GroupEndpoints, IssueEndpoints, IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter,
-    IterationEndpoints, JobEndpoints, LabelEndpoints, LinkType, MemberEndpoints,
-    MergeRequestEndpoints, MergeRequestQuery, MetadataEndpoints, MilestoneEndpoints, NoteEndpoints,
-    PipelineEndpoints, PipelineInput, PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints,
-    ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints,
-    ResourceEventEndpoints, RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints,
-    TodoEndpoints, UpdateIssue, UpdateLabel, UpdateMergeRequest, UpdateMilestone, UpdateWikiPage,
-    UserEndpoints, WikiEndpoints,
+    AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CommitEndpoints, CreateEpic,
+    CreateIssue, CreateLabel, CreateMergeRequest, CreateMilestone, CreateRelease, CreateSnippet,
+    CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
+    EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
+    IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
+    LabelEndpoints, LinkType, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery,
+    MetadataEndpoints, MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineInput,
+    PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
+    ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints,
+    RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints, SnippetFileInput,
+    TodoEndpoints, UpdateEpic, UpdateIssue, UpdateLabel, UpdateMergeRequest, UpdateMilestone,
+    UpdateRelease, UpdateSnippet, UpdateWikiPage, UserEndpoints, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;

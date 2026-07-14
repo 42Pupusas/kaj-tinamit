@@ -39,7 +39,7 @@ pub use ci::{JobEndpoints, PipelineEndpoints, PipelineInput, PipelineQuery};
 pub use commits::CommitEndpoints;
 pub use deploy::{DeployKeyEndpoints, DeployTokenEndpoints};
 pub use deployments::{DeploymentEndpoints, EnvironmentEndpoints};
-pub use epics::EpicEndpoints;
+pub use epics::{CreateEpic, EpicEndpoints, UpdateEpic};
 pub use events::EventEndpoints;
 pub use groups::{GroupEndpoints, MemberEndpoints};
 pub use issue_links::{IssueLinkEndpoints, LinkType};
@@ -58,12 +58,14 @@ pub use notes::NoteEndpoints;
 pub use pipeline_schedules::PipelineScheduleEndpoints;
 pub use projects::ProjectEndpoints;
 pub use protected::ProtectedEndpoints;
-pub use releases::ReleaseEndpoints;
+pub use releases::{CreateRelease, ReleaseEndpoints, UpdateRelease};
 pub use repository::RepositoryEndpoints;
 pub use resource_events::ResourceEventEndpoints;
 pub use runners::{RunnerEndpoints, RunnerQuery};
 pub use search::SearchEndpoints;
-pub use snippets::{ProjectSnippetEndpoints, SnippetEndpoints};
+pub use snippets::{
+    CreateSnippet, ProjectSnippetEndpoints, SnippetEndpoints, SnippetFileInput, UpdateSnippet,
+};
 pub use todos::TodoEndpoints;
 pub use users::UserEndpoints;
 pub use wikis::{CreateWikiPage, UpdateWikiPage, WikiEndpoints};
