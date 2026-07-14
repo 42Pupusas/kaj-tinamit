@@ -84,6 +84,16 @@ pub struct RunnerManager {
     pub job_execution_status: Option<String>,
 }
 
+/// The authentication token returned when resetting a runner's token
+/// (`POST /runners/:id/reset_authentication_token`).
+#[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[bourne(deny_unknown_fields = false)]
+pub struct RunnerAuthToken {
+    pub token: String,
+    pub token_expires_at: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

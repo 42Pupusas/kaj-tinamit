@@ -48,29 +48,41 @@ Every endpoint lives on an extension trait implemented for `GitlabClient`
 ## API coverage
 
 Read (`GET`) endpoints across these API categories are implemented and
-live-verified against a real instance. Write operations are intentionally
-out of scope.
+live-verified against a real instance. Write operations (`POST`/`PUT`/
+`DELETE`) mirror the read surface for the categories marked ✎ below.
 
-| Category | Endpoint trait(s) |
-|----------|-------------------|
-| Users | `UserEndpoints` |
-| Projects | `ProjectEndpoints` |
-| Issues | `IssueEndpoints` (+ `IssueQuery`) |
-| Merge requests | `MergeRequestEndpoints` (+ `MergeRequestQuery`) |
-| Commits | `CommitEndpoints` |
-| Milestones | `MilestoneEndpoints` |
-| Events | `EventEndpoints` |
-| Wikis | `WikiEndpoints` |
-| Repository (tree/blobs/branches/tags/files/blame) | `RepositoryEndpoints` |
-| Groups & members | `GroupEndpoints`, `MemberEndpoints` |
-| Labels | `LabelEndpoints` |
-| CI (pipelines/jobs) | `PipelineEndpoints` (+ `PipelineQuery`), `JobEndpoints` |
-| Releases | `ReleaseEndpoints` |
-| Snippets | `SnippetEndpoints`, `ProjectSnippetEndpoints` |
-| Environments & deployments | `EnvironmentEndpoints`, `DeploymentEndpoints` |
-| Runners | `RunnerEndpoints` (+ `RunnerQuery`) |
-| Notes (all noteable types) | `NoteEndpoints` |
-| Deploy keys & tokens | `DeployKeyEndpoints`, `DeployTokenEndpoints` |
+| Category | Endpoint trait(s) | Writes |
+|----------|-------------------|:------:|
+| Users | `UserEndpoints` | |
+| Projects | `ProjectEndpoints` | ✎ create/update/delete, archive, star |
+| Issues | `IssueEndpoints` (+ `IssueQuery`) | ✎ create/update/delete |
+| Merge requests | `MergeRequestEndpoints` (+ `MergeRequestQuery`) | ✎ create/update/accept/delete |
+| Commits | `CommitEndpoints` | ✎ create commit, cherry-pick, revert, set status |
+| Milestones | `MilestoneEndpoints` | ✎ create/update/delete (project + group) |
+| Events | `EventEndpoints` | |
+| Wikis | `WikiEndpoints` | ✎ create/update/delete (project + group) |
+| Repository (tree/blobs/branches/tags/files/blame) | `RepositoryEndpoints` | ✎ files, branches, tags |
+| Groups & members | `GroupEndpoints`, `MemberEndpoints` | ✎ add/update/remove member |
+| Labels | `LabelEndpoints` | ✎ create/update/delete (project + group) |
+| CI (pipelines/jobs) | `PipelineEndpoints` (+ `PipelineQuery`), `JobEndpoints` | ✎ create/retry/cancel/delete pipeline; play/retry/cancel/erase job |
+| Pipeline schedules | `PipelineScheduleEndpoints` | ✎ create/update/delete/play/take-ownership |
+| Releases | `ReleaseEndpoints` | ✎ create/update/delete |
+| Snippets | `SnippetEndpoints`, `ProjectSnippetEndpoints` | ✎ create/update/delete |
+| Epics | `EpicEndpoints` | ✎ create/update/delete |
+| Issue links | `IssueLinkEndpoints` | ✎ create/delete |
+| Notes (all noteable types) | `NoteEndpoints` | ✎ create/update/delete |
+| Emoji reactions | `AwardEmojiEndpoints` | ✎ award/remove |
+| To-dos | `TodoEndpoints` | ✎ mark done / mark all done |
+| Boards | `BoardEndpoints` | ✎ create/delete board + lists |
+| Protected branches/tags | `ProtectedEndpoints` | ✎ protect/unprotect |
+| Environments & deployments | `EnvironmentEndpoints`, `DeploymentEndpoints` | ✎ create/update/stop/delete environment; create/update/delete deployment |
+| Runners | `RunnerEndpoints` (+ `RunnerQuery`) | ✎ update/pause/delete, assign/unassign project, reset token |
+| Deploy keys & tokens | `DeployKeyEndpoints`, `DeployTokenEndpoints` | ✎ add/enable/delete key; create/delete token |
+
+Write bodies are small builder structs (`CreateIssue`, `UpdateMergeRequest`,
+`CommitFile`, …) re-exported at the crate root. Optional fields are omitted
+from the JSON payload when unset (via json-bourne's `skip_if_none`), so a
+partial update touches only the fields you set.
 
 ## Testing
 

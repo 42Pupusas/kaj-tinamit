@@ -1,7 +1,9 @@
 //! API endpoint methods, grouped by resource. Each submodule defines an
 //! extension trait implemented for [`GitlabClient`](crate::GitlabClient).
 //!
-//! All endpoints here are **read-only** (GET) — no create/update/delete.
+//! Most categories expose both read (`GET`) and write (`POST`/`PUT`/
+//! `DELETE`) endpoints; write bodies are the small `Create*`/`Update*`
+//! builder structs re-exported from the crate root.
 
 mod award_emoji;
 mod boards;
@@ -38,7 +40,10 @@ pub use boards::BoardEndpoints;
 pub use ci::{JobEndpoints, PipelineEndpoints, PipelineInput, PipelineQuery};
 pub use commits::{CommitAction, CommitEndpoints, CommitStatusUpdate, CreateCommit};
 pub use deploy::{CreateDeployKey, CreateDeployToken, DeployKeyEndpoints, DeployTokenEndpoints};
-pub use deployments::{DeploymentEndpoints, EnvironmentEndpoints};
+pub use deployments::{
+    CreateDeployment, CreateEnvironment, DeploymentEndpoints, EnvironmentEndpoints,
+    UpdateDeployment, UpdateEnvironment,
+};
 pub use epics::{CreateEpic, EpicEndpoints, UpdateEpic};
 pub use events::EventEndpoints;
 pub use groups::{GroupEndpoints, MemberEndpoints};
@@ -63,7 +68,7 @@ pub use protected::ProtectedEndpoints;
 pub use releases::{CreateRelease, ReleaseEndpoints, UpdateRelease};
 pub use repository::{CommitFile, RepositoryEndpoints};
 pub use resource_events::ResourceEventEndpoints;
-pub use runners::{RunnerEndpoints, RunnerQuery};
+pub use runners::{RunnerEndpoints, RunnerQuery, UpdateRunner};
 pub use search::SearchEndpoints;
 pub use snippets::{
     CreateSnippet, ProjectSnippetEndpoints, SnippetEndpoints, SnippetFileInput, UpdateSnippet,

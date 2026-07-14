@@ -170,6 +170,7 @@ round_trip!(runner, Runner);
 round_trip!(runner_project, RunnerProject);
 round_trip!(runner_detail, RunnerDetail);
 round_trip!(runner_manager, RunnerManager);
+round_trip!(runner_auth_token, RunnerAuthToken);
 
 // note
 round_trip!(note_author, NoteAuthor);

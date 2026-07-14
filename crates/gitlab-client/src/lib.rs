@@ -29,19 +29,20 @@ mod pagination;
 pub use client::GitlabClient;
 pub use endpoints::{
     AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CommitAction, CommitEndpoints,
-    CommitFile, CommitStatusUpdate, CreateCommit, CreateDeployKey, CreateDeployToken, CreateEpic,
-    CreateIssue, CreateLabel, CreateMergeRequest, CreateMilestone, CreatePipelineSchedule,
-    CreateProject, CreateRelease, CreateSnippet, CreateWikiPage, DeployKeyEndpoints,
-    DeployTokenEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints, EventEndpoints,
-    GroupEndpoints, IssueEndpoints, IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter,
-    IterationEndpoints, JobEndpoints, LabelEndpoints, LinkType, MemberEndpoints,
-    MergeRequestEndpoints, MergeRequestQuery, MetadataEndpoints, MilestoneEndpoints, NoteEndpoints,
-    PipelineEndpoints, PipelineInput, PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints,
-    ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints,
-    ResourceEventEndpoints, RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints,
-    SnippetFileInput, TodoEndpoints, UpdateEpic, UpdateIssue, UpdateLabel, UpdateMergeRequest,
-    UpdateMilestone, UpdatePipelineSchedule, UpdateProject, UpdateRelease, UpdateSnippet,
-    UpdateWikiPage, UserEndpoints, WikiEndpoints,
+    CommitFile, CommitStatusUpdate, CreateCommit, CreateDeployKey, CreateDeployToken,
+    CreateDeployment, CreateEnvironment, CreateEpic, CreateIssue, CreateLabel, CreateMergeRequest,
+    CreateMilestone, CreatePipelineSchedule, CreateProject, CreateRelease, CreateSnippet,
+    CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
+    EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
+    IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
+    LabelEndpoints, LinkType, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery,
+    MetadataEndpoints, MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineInput,
+    PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
+    ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints,
+    RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints, SnippetFileInput,
+    TodoEndpoints, UpdateDeployment, UpdateEnvironment, UpdateEpic, UpdateIssue, UpdateLabel,
+    UpdateMergeRequest, UpdateMilestone, UpdatePipelineSchedule, UpdateProject, UpdateRelease,
+    UpdateRunner, UpdateSnippet, UpdateWikiPage, UserEndpoints, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;

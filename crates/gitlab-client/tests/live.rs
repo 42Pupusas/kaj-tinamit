@@ -8,7 +8,23 @@
 //! ```
 
 use gitlab_client::prelude::*;
-use gitlab_client::{GitlabClient, IssueQuery, IssueScope, IssueStateFilter};
+use gitlab_client::{
+    CommitAction, CreateCommit, CreateEnvironment, CreateIssue, CreateLabel, GitlabClient,
+    IssueQuery, IssueScope, IssueStateFilter, UpdateEnvironment, UpdateIssue,
+};
+
+/// The project the write tests operate on. Override with `GITLAB_TEST_PROJECT`
+/// (a numeric ID); defaults to the first membership project.
+fn write_test_project(client: &GitlabClient) -> i64 {
+    if let Ok(id) = std::env::var("GITLAB_TEST_PROJECT")
+        && let Ok(id) = id.parse::<i64>()
+    {
+        return id;
+    }
+    let projects = client.projects().expect("projects request failed");
+    let project = projects.first().expect("need at least one project");
+    i64::from(project.id)
+}
 
 #[test]
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
@@ -1019,4 +1035,185 @@ fn group_releases_and_wikis_smoke() {
         }
         Err(e) => eprintln!("group wikis not accessible: {e}"),
     }
+}
+
+// ===========================================================================
+// Write smoke tests. Each performs a full create -> mutate -> delete cycle
+// and cleans up after itself. They mutate the target project, so they are
+// ignored by default and gated behind an explicit opt-in.
+// ===========================================================================
+
+/// Issue lifecycle: create -> comment -> react -> update/close -> delete.
+#[test]
+#[ignore = "mutates a real project; requires GITLAB_URL + GITLAB_PAT"]
+fn write_issue_lifecycle() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let pid = write_test_project(&client);
+    let pid32 = i32::try_from(pid).expect("project id fits i32");
+
+    let created = client
+        .create_issue(
+            pid32,
+            &CreateIssue::new("[kaj-tinamit] write smoke test")
+                .with_description("Created by the gitlab-client write test.")
+                .with_labels(&["kaj-tinamit-test"]),
+        )
+        .expect("create_issue failed");
+    eprintln!("created issue !{} (id {})", created.iid, created.id);
+    let iid = i64::from(created.iid);
+
+    let note = client
+        .create_issue_note(pid, iid, "Automated comment from the write test.")
+        .expect("create_issue_note failed");
+    eprintln!("  added note #{}", note.id);
+
+    client
+        .update_issue_note(pid, iid, note.id, "Edited comment.")
+        .expect("update_issue_note failed");
+
+    let award = client
+        .award_issue_emoji(pid, iid, "thumbsup")
+        .expect("award_issue_emoji failed");
+    eprintln!("  reacted :{}:", award.name.as_deref().unwrap_or("?"));
+    client
+        .remove_issue_award_emoji(pid, iid, award.id)
+        .expect("remove_issue_award_emoji failed");
+
+    let updated = client
+        .update_issue(
+            pid32,
+            created.iid,
+            &UpdateIssue::new()
+                .with_title("[kaj-tinamit] write smoke test (edited)")
+                .close(),
+        )
+        .expect("update_issue failed");
+    eprintln!("  updated + closed: state {:?}", updated.state);
+
+    client.delete_issue_note(pid, iid, note.id).ok();
+    client
+        .delete_issue(pid32, created.iid)
+        .expect("delete_issue failed");
+    eprintln!("  deleted issue !{}", created.iid);
+}
+
+/// Label lifecycle: create -> update -> delete.
+#[test]
+#[ignore = "mutates a real project; requires GITLAB_URL + GITLAB_PAT"]
+fn write_label_lifecycle() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let pid = write_test_project(&client);
+
+    let name = "kaj-tinamit-test";
+    // Best-effort cleanup of a leftover from a prior run.
+    client.delete_project_label(pid, name).ok();
+
+    let label = client
+        .create_project_label(
+            pid,
+            &CreateLabel::new(name, "#6699cc").with_description("temp"),
+        )
+        .expect("create_project_label failed");
+    eprintln!("created label {} {}", label.color, label.name);
+
+    let updated = client
+        .update_project_label(
+            pid,
+            name,
+            &gitlab_client::UpdateLabel::new().with_color("#cc6699"),
+        )
+        .expect("update_project_label failed");
+    eprintln!("  recolored to {}", updated.color);
+
+    client
+        .delete_project_label(pid, name)
+        .expect("delete_project_label failed");
+    eprintln!("  deleted label {name}");
+}
+
+/// Repository lifecycle: create branch -> commit a file -> delete branch.
+#[test]
+#[ignore = "mutates a real project; requires GITLAB_URL + GITLAB_PAT"]
+fn write_repository_lifecycle() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let pid = write_test_project(&client);
+
+    // Pick the default branch to fork from.
+    let branches = client.branches(pid).expect("branches failed");
+    let base = branches
+        .iter()
+        .find(|b| b.default)
+        .or_else(|| branches.first())
+        .expect("repository has a branch")
+        .name
+        .clone();
+
+    let work = "kaj-tinamit-test-branch";
+    client.delete_branch(pid, work).ok();
+
+    let created = client
+        .create_branch(pid, work, &base)
+        .expect("create_branch failed");
+    eprintln!("created branch {} from {}", created.name, base);
+
+    let commit = client
+        .create_commit(
+            pid,
+            &CreateCommit::new(
+                work,
+                "Add kaj-tinamit test file",
+                vec![CommitAction::create(
+                    "kaj-tinamit-test.txt",
+                    "hello from the write test\n",
+                )],
+            ),
+        )
+        .expect("create_commit failed");
+    eprintln!("  committed {}", commit.id);
+
+    client
+        .delete_branch(pid, work)
+        .expect("delete_branch failed");
+    eprintln!("  deleted branch {work}");
+}
+
+/// Environment lifecycle: create -> update -> stop -> delete.
+#[test]
+#[ignore = "mutates a real project; requires GITLAB_URL + GITLAB_PAT"]
+fn write_environment_lifecycle() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let pid = write_test_project(&client);
+
+    let created = client
+        .create_environment(
+            pid,
+            &CreateEnvironment::new("kaj-tinamit-test-env")
+                .with_external_url("https://kaj-tinamit.example.com")
+                .with_tier("other"),
+        )
+        .expect("create_environment failed");
+    eprintln!("created environment {} (id {})", created.name, created.id);
+
+    let updated = client
+        .update_environment(
+            pid,
+            created.id,
+            &UpdateEnvironment::new().with_description("edited by the write test"),
+        )
+        .expect("update_environment failed");
+    eprintln!(
+        "  updated: description {:?}",
+        updated.description.as_deref()
+    );
+
+    // Stopping is a prerequisite for deletion.
+    client
+        .stop_environment(pid, created.id)
+        .expect("stop_environment failed");
+    eprintln!("  stopped environment {}", created.id);
+
+    client
+        .delete_environment(pid, created.id)
+        .expect("delete_environment failed");
+    eprintln!("  deleted environment {}", created.id);
 }
