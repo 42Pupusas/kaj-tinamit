@@ -18,8 +18,7 @@ pub trait LabelEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_labels(&self, project_id: i64, with_counts: bool)
-    -> Result<Vec<Label>, Error>;
+    fn project_labels(&self, project_id: i64, with_counts: bool) -> Result<Vec<Label>, Error>;
 
     /// Retrieve a single project label by ID or title.
     ///
@@ -45,11 +44,7 @@ pub trait LabelEndpoints {
 }
 
 impl LabelEndpoints for GitlabClient {
-    fn project_labels(
-        &self,
-        project_id: i64,
-        with_counts: bool,
-    ) -> Result<Vec<Label>, Error> {
+    fn project_labels(&self, project_id: i64, with_counts: bool) -> Result<Vec<Label>, Error> {
         let mut url = format!("api/v4/projects/{project_id}/labels");
         if with_counts {
             url.push_str("?with_counts=true");

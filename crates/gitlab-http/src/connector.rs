@@ -76,7 +76,9 @@ impl Connector for TlsConnector {
 
         let port = url.effective_port();
         let addrs = (host_str, port).to_socket_addrs().map_err(|e| {
-            Error::Connection(ConnectionError::Other(format!("DNS resolution failed: {e}")))
+            Error::Connection(ConnectionError::Other(format!(
+                "DNS resolution failed: {e}"
+            )))
         })?;
 
         // Try each resolved address with a bounded connect, so a single

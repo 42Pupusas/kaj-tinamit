@@ -86,6 +86,56 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Environments + Deployments categories: walk projects to
+/// find one with environments/deployments, round-trip single fetches.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn environments_and_deployments_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects request failed");
+
+    let mut env_hit = false;
+    let mut dep_hit = false;
+    for p in &projects {
+        let pid = i64::from(p.id);
+
+        if !env_hit
+            && let Ok(envs) = client.environments(pid)
+            && let Some(first) = envs.first()
+        {
+            eprintln!(
+                "environments in #{}: {} (first: {})",
+                pid,
+                envs.len(),
+                first.name
+            );
+            let one = client.environment(pid, first.id).expect("environment failed");
+            assert_eq!(one.id, first.id);
+            env_hit = true;
+        }
+
+        if !dep_hit
+            && let Ok(deps) = client.deployments(pid)
+            && let Some(first) = deps.first()
+        {
+            eprintln!("deployments in #{}: {} (first id {})", pid, deps.len(), first.id);
+            let one = client.deployment(pid, first.id).expect("deployment failed");
+            assert_eq!(one.id, first.id);
+            dep_hit = true;
+        }
+
+        if env_hit && dep_hit {
+            break;
+        }
+    }
+    if !env_hit {
+        eprintln!("no environments found in any project");
+    }
+    if !dep_hit {
+        eprintln!("no deployments found in any project");
+    }
+}
+
 /// Exercises the Snippets category: personal snippets (list + single + raw)
 /// and public snippets. Personal snippets may be empty on the test account,
 /// so the detail checks are conditional; public snippets exercise parsing.
@@ -184,7 +234,9 @@ fn ci_smoke() {
     let detail = client.pipeline(pid, pipeline_id).expect("pipeline failed");
     eprintln!("  pipeline {} status {:?}", detail.id, detail.status);
 
-    let jobs = client.pipeline_jobs(pid, pipeline_id).expect("pipeline_jobs failed");
+    let jobs = client
+        .pipeline_jobs(pid, pipeline_id)
+        .expect("pipeline_jobs failed");
     eprintln!("  jobs: {}", jobs.len());
     for j in jobs.iter().take(5) {
         eprintln!(
@@ -222,7 +274,10 @@ fn labels_smoke() {
             .expect("group_labels failed");
         eprintln!("group #{} labels: {}", group.id, labels.len());
         for l in labels.iter().take(5) {
-            eprintln!("  {} {} (open issues {})", l.color, l.name, l.open_issues_count);
+            eprintln!(
+                "  {} {} (open issues {})",
+                l.color, l.name, l.open_issues_count
+            );
         }
         if let Some(first) = labels.first() {
             let one = client
@@ -340,13 +395,16 @@ fn repository_smoke() {
     let tags = client.tags(pid).expect("tags request failed");
     eprintln!("  tags: {}", tags.len());
 
-    let contributors = client.contributors(pid).expect("contributors request failed");
+    let contributors = client
+        .contributors(pid)
+        .expect("contributors request failed");
     eprintln!("  contributors: {}", contributors.len());
 
     // Fetch the first blob-type entry as a file (metadata + raw).
-    if let Some(blob) = tree.iter().find(|e| {
-        matches!(e.entry_type, gitlab_client::model::TreeEntryType::Blob)
-    }) {
+    if let Some(blob) = tree
+        .iter()
+        .find(|e| matches!(e.entry_type, gitlab_client::model::TreeEntryType::Blob))
+    {
         let file = client
             .file(pid, &blob.path, &default_branch.name)
             .expect("file request failed");

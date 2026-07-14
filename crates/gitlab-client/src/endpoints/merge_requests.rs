@@ -57,11 +57,8 @@ pub trait MergeRequestEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn merge_request_pipelines(
-        &self,
-        project_id: i64,
-        mr_iid: i64,
-    ) -> Result<Vec<Pipeline>, Error>;
+    fn merge_request_pipelines(&self, project_id: i64, mr_iid: i64)
+    -> Result<Vec<Pipeline>, Error>;
 
     /// Get approval information for a merge request.
     ///

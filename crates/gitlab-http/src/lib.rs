@@ -201,7 +201,13 @@ mod tests {
 
     #[test]
     fn response_success_ranges() {
-        let ok = |s| Response { status: s, body: String::new() }.is_success();
+        let ok = |s| {
+            Response {
+                status: s,
+                body: String::new(),
+            }
+            .is_success()
+        };
         assert!(ok(200));
         assert!(ok(204));
         assert!(!ok(301));

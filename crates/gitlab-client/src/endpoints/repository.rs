@@ -147,8 +147,7 @@ pub trait RepositoryEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn file_raw(&self, project_id: i64, file_path: &str, ref_name: &str)
-    -> Result<String, Error>;
+    fn file_raw(&self, project_id: i64, file_path: &str, ref_name: &str) -> Result<String, Error>;
 
     /// Retrieve blame ranges for a file at `ref_name`.
     ///
@@ -240,9 +239,7 @@ impl RepositoryEndpoints for GitlabClient {
     }
 
     fn branches(&self, project_id: i64) -> Result<Vec<Branch>, Error> {
-        self.get_paginated(&format!(
-            "api/v4/projects/{project_id}/repository/branches"
-        ))
+        self.get_paginated(&format!("api/v4/projects/{project_id}/repository/branches"))
     }
 
     fn search_branches(&self, project_id: i64, search: &str) -> Result<Vec<Branch>, Error> {
@@ -283,12 +280,7 @@ impl RepositoryEndpoints for GitlabClient {
         ))
     }
 
-    fn file_raw(
-        &self,
-        project_id: i64,
-        file_path: &str,
-        ref_name: &str,
-    ) -> Result<String, Error> {
+    fn file_raw(&self, project_id: i64, file_path: &str, ref_name: &str) -> Result<String, Error> {
         self.get_raw(&format!(
             "api/v4/projects/{project_id}/repository/files/{}/raw?ref={}",
             file_path.percent_encode(),

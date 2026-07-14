@@ -136,11 +136,7 @@ impl GitlabClient {
     }
 
     /// Execute a paginated GitLab request, aggregating all pages.
-    pub(crate) fn paginate<T>(
-        &self,
-        url: &str,
-        config: &PaginationConfig,
-    ) -> Result<Vec<T>, Error>
+    pub(crate) fn paginate<T>(&self, url: &str, config: &PaginationConfig) -> Result<Vec<T>, Error>
     where
         T: for<'de> FromJson<'de>,
     {
@@ -156,8 +152,7 @@ impl GitlabClient {
             }
 
             let separator = if url.contains('?') { "&" } else { "?" };
-            let paged_url =
-                format!("{url}{separator}per_page={}&page={page}", config.per_page);
+            let paged_url = format!("{url}{separator}per_page={}&page={page}", config.per_page);
 
             let response = gitlab_http::get(&paged_url)
                 .header("Authorization", &auth)

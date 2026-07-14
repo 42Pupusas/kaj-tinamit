@@ -136,6 +136,16 @@ round_trip!(snippet_file, SnippetFile);
 round_trip!(snippet, Snippet);
 round_trip!(snippet_user_agent_detail, SnippetUserAgentDetail);
 
+// deployment + environment
+round_trip!(deployment_user, DeploymentUser);
+round_trip!(deployable_commit, DeployableCommit);
+round_trip!(deployable_pipeline, DeployablePipeline);
+round_trip!(deployable, Deployable);
+round_trip!(environment_ref, EnvironmentRef);
+round_trip!(deployment, Deployment);
+round_trip!(last_deployment, LastDeployment);
+round_trip!(environment, Environment);
+
 // ci
 round_trip!(ci_status, CiStatus);
 round_trip!(ci_user, CiUser);

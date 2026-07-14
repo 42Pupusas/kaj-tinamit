@@ -152,10 +152,8 @@ pub trait IssueEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn issues_updated_after(
-        &self,
-        timestamp: impl Into<String>,
-    ) -> Result<Vec<GitlabIssue>, Error>;
+    fn issues_updated_after(&self, timestamp: impl Into<String>)
+    -> Result<Vec<GitlabIssue>, Error>;
 
     /// Fetch issues for a specific project with optional filters.
     ///

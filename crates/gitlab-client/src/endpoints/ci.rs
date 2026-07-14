@@ -185,11 +185,7 @@ pub trait JobEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn pipeline_trigger_jobs(
-        &self,
-        project_id: i64,
-        pipeline_id: i64,
-    ) -> Result<Vec<Job>, Error>;
+    fn pipeline_trigger_jobs(&self, project_id: i64, pipeline_id: i64) -> Result<Vec<Job>, Error>;
 
     /// Retrieve a single job by ID.
     ///
@@ -217,11 +213,7 @@ impl JobEndpoints for GitlabClient {
         ))
     }
 
-    fn pipeline_trigger_jobs(
-        &self,
-        project_id: i64,
-        pipeline_id: i64,
-    ) -> Result<Vec<Job>, Error> {
+    fn pipeline_trigger_jobs(&self, project_id: i64, pipeline_id: i64) -> Result<Vec<Job>, Error> {
         self.get_paginated(&format!(
             "api/v4/projects/{project_id}/pipelines/{pipeline_id}/trigger_jobs"
         ))
@@ -232,9 +224,7 @@ impl JobEndpoints for GitlabClient {
     }
 
     fn job_trace(&self, project_id: i64, job_id: i64) -> Result<String, Error> {
-        self.get_raw(&format!(
-            "api/v4/projects/{project_id}/jobs/{job_id}/trace"
-        ))
+        self.get_raw(&format!("api/v4/projects/{project_id}/jobs/{job_id}/trace"))
     }
 }
 

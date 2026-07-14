@@ -37,11 +37,7 @@ pub trait CommitEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn commits(
-        &self,
-        project_id: i64,
-        ref_name: Option<&str>,
-    ) -> Result<Vec<GitlabCommit>, Error>;
+    fn commits(&self, project_id: i64, ref_name: Option<&str>) -> Result<Vec<GitlabCommit>, Error>;
 
     /// Compare two refs and get the resulting file diffs.
     ///
@@ -69,11 +65,7 @@ impl CommitEndpoints for GitlabClient {
         ))
     }
 
-    fn commits(
-        &self,
-        project_id: i64,
-        ref_name: Option<&str>,
-    ) -> Result<Vec<GitlabCommit>, Error> {
+    fn commits(&self, project_id: i64, ref_name: Option<&str>) -> Result<Vec<GitlabCommit>, Error> {
         let mut url = format!("api/v4/projects/{project_id}/repository/commits");
         if let Some(ref_name) = ref_name {
             url.push_str(&format!("?ref_name={}", ref_name.percent_encode()));

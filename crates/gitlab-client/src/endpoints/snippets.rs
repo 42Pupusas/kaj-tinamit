@@ -52,12 +52,7 @@ pub trait SnippetEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn snippet_file_raw(
-        &self,
-        id: i64,
-        ref_name: &str,
-        file_path: &str,
-    ) -> Result<String, Error>;
+    fn snippet_file_raw(&self, id: i64, ref_name: &str, file_path: &str) -> Result<String, Error>;
 }
 
 impl SnippetEndpoints for GitlabClient {
@@ -81,12 +76,7 @@ impl SnippetEndpoints for GitlabClient {
         self.get_raw(&format!("api/v4/snippets/{id}/raw"))
     }
 
-    fn snippet_file_raw(
-        &self,
-        id: i64,
-        ref_name: &str,
-        file_path: &str,
-    ) -> Result<String, Error> {
+    fn snippet_file_raw(&self, id: i64, ref_name: &str, file_path: &str) -> Result<String, Error> {
         self.get_raw(&format!(
             "api/v4/snippets/{id}/files/{}/{}/raw",
             ref_name.percent_encode(),
@@ -116,11 +106,7 @@ pub trait ProjectSnippetEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_snippet_raw(
-        &self,
-        project_id: i64,
-        snippet_id: i64,
-    ) -> Result<String, Error>;
+    fn project_snippet_raw(&self, project_id: i64, snippet_id: i64) -> Result<String, Error>;
 
     /// Retrieve the raw content of a single file within a project snippet.
     ///
@@ -158,11 +144,7 @@ impl ProjectSnippetEndpoints for GitlabClient {
         ))
     }
 
-    fn project_snippet_raw(
-        &self,
-        project_id: i64,
-        snippet_id: i64,
-    ) -> Result<String, Error> {
+    fn project_snippet_raw(&self, project_id: i64, snippet_id: i64) -> Result<String, Error> {
         self.get_raw(&format!(
             "api/v4/projects/{project_id}/snippets/{snippet_id}/raw"
         ))

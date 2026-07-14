@@ -5,10 +5,10 @@
 //! regressions in `json-bourne` and in our derive usage.
 
 use gitlab_model::{
-    Blob, Branch, CommitWithDiffs, Contributor, Discussion, GitlabCommit, GitlabEvent, GitlabGroup,
-    GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member, MergeRequest, MergeRequestChanges,
-    Milestone, PipelineDetail, PipelineSummary, PipelineVariable, Release, RepositoryFile, Snippet,
-    Tag, TreeEntry, WikiPage, WikiPageList,
+    Blob, Branch, CommitWithDiffs, Contributor, Deployment, Discussion, Environment, GitlabCommit,
+    GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member,
+    MergeRequest, MergeRequestChanges, Milestone, PipelineDetail, PipelineSummary, PipelineVariable,
+    Release, RepositoryFile, Snippet, Tag, TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -290,6 +290,27 @@ bench_parse!(
     "name":"John Smith","state":"active"},"expires_at":null,"updated_at":"2012-06-28T10:52:04Z",
     "created_at":"2012-06-28T10:52:04Z","project_id":null,"web_url":"http://example.com/snippets/1",
     "raw_url":"http://example.com/snippets/1/raw"}"#
+);
+
+bench_parse!(
+    environment,
+    Environment,
+    r#"{"id":1,"name":"review/fix-foo","slug":"review-fix-foo-dfjre3",
+    "description":"review env","external_url":"https://x.example.com","state":"available",
+    "tier":"development","created_at":"2019-05-25T18:55:13Z","updated_at":"2019-05-27T18:55:13Z",
+    "auto_stop_setting":"always"}"#
+);
+
+bench_parse!(
+    deployment,
+    Deployment,
+    r#"{"id":42,"iid":2,"ref":"main","sha":"a91957a8","status":"success",
+    "created_at":"2016-08-11T11:32:35Z","updated_at":"2016-08-11T11:34:01Z",
+    "environment":{"id":9,"name":"production","external_url":"https://x"},
+    "user":{"id":1,"name":"Admin","username":"root","state":"active"},
+    "deployable":{"id":664,"status":"success","stage":"deploy","name":"deploy","ref":"main",
+    "tag":false,"commit":{"id":"a91957a8","short_id":"a91957a8","title":"Merge"},
+    "pipeline":{"id":42,"ref":"main","sha":"a91957a8","status":"success"}}}"#
 );
 
 // ---------------------------------------------------------------------------
