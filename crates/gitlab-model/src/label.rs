@@ -6,6 +6,7 @@ use json_bourne::{FromJson, ToJson};
 /// (`/projects/:id/labels`) and group (`/groups/:id/labels`) endpoints; the
 /// count fields are only populated when `with_counts=true` is requested.
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Label {
     pub id: i64,

@@ -5,6 +5,7 @@ use json_bourne::{FromJson, ToJson};
 
 /// Merge request state.
 #[derive(Debug, Clone, PartialEq, Eq, FromJson, ToJson)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum MergeRequestState {
     Opened,
@@ -26,6 +27,7 @@ impl AsRef<str> for MergeRequestState {
 
 /// Merge status.
 #[derive(Debug, Clone, PartialEq, Eq, FromJson, ToJson)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "snake_case")]
 pub enum MergeStatus {
     CanBeMerged,
@@ -47,6 +49,7 @@ impl AsRef<str> for MergeStatus {
 
 /// Merge request resource.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct MergeRequest {
     pub id: i64,
@@ -84,6 +87,7 @@ pub struct MergeRequest {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct MergeRequestUser {
     pub id: i64,
@@ -93,6 +97,7 @@ pub struct MergeRequestUser {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct MergeRequestMilestone {
     pub id: i64,
@@ -102,6 +107,7 @@ pub struct MergeRequestMilestone {
 
 /// A discussion (thread of notes) on a merge request or issue.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Discussion {
     pub id: String,
@@ -110,6 +116,7 @@ pub struct Discussion {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct DiscussionNote {
     pub id: i64,
@@ -125,6 +132,7 @@ pub struct DiscussionNote {
 
 /// Merge request changes/diffs.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct MergeRequestChanges {
     pub id: i64,
@@ -140,6 +148,7 @@ pub struct MergeRequestChanges {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct FileChange {
     pub old_path: String,
@@ -154,6 +163,7 @@ pub struct FileChange {
 
 /// Pipeline status.
 #[derive(Debug, Clone, PartialEq, Eq, FromJson, ToJson)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum PipelineStatus {
     Created,
@@ -189,6 +199,7 @@ impl AsRef<str> for PipelineStatus {
 
 /// Pipeline information.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Pipeline {
     pub id: i64,
@@ -203,6 +214,7 @@ pub struct Pipeline {
 
 /// Merge request approvals.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct MergeRequestApprovals {
     pub approvals_required: i32,
@@ -211,6 +223,7 @@ pub struct MergeRequestApprovals {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Approval {
     pub user: MergeRequestUser,
@@ -218,6 +231,7 @@ pub struct Approval {
 
 /// Noteable type for notes/comments.
 #[derive(Debug, Clone, PartialEq, Eq, FromJson, ToJson)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 pub enum NoteableType {
     Issue,
     MergeRequest,
@@ -238,6 +252,7 @@ impl AsRef<str> for NoteableType {
 
 /// Note/comment on various objects.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Note {
     pub id: i64,

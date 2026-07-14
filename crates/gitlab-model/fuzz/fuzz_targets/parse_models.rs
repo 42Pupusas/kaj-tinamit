@@ -9,8 +9,9 @@
 //! Run: `cargo +nightly fuzz run parse_models`
 
 use gitlab_model::{
-    Branch, GitlabCommit, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member,
-    PipelineDetail, PipelineSummary, RepositoryFile, Tag, TreeEntry,
+    Blob, Branch, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser,
+    Job, Label, Member, MergeRequest, PipelineDetail, PipelineSummary, RepositoryFile, Tag,
+    TreeEntry, WikiPage,
 };
 use json_bourne::parse;
 use libfuzzer_sys::fuzz_target;
@@ -32,6 +33,10 @@ fuzz_target!(|data: &[u8]| {
     let _ = parse::<PipelineSummary>(data);
     let _ = parse::<PipelineDetail>(data);
     let _ = parse::<Job>(data);
+    let _ = parse::<MergeRequest>(data);
+    let _ = parse::<GitlabEvent>(data);
+    let _ = parse::<WikiPage>(data);
+    let _ = parse::<Blob>(data);
 
     // Arrays of the most common list types, as GitLab returns them.
     let _ = parse::<Vec<GitlabProject>>(data);

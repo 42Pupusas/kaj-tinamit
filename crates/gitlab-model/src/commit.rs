@@ -4,6 +4,7 @@ use json_bourne::{FromJson, ToJson};
 
 /// A git commit from the GitLab API.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct GitlabCommit {
     pub id: String,
@@ -24,6 +25,7 @@ pub struct GitlabCommit {
 
 /// A single file diff from a commit or compare response.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct CommitDiff {
     pub old_path: String,
@@ -38,6 +40,7 @@ pub struct CommitDiff {
 
 /// A commit including per-commit change statistics.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct CommitWithDiffs {
     pub id: String,
@@ -59,6 +62,7 @@ pub struct CommitWithDiffs {
 
 /// Commit statistics.
 #[derive(Debug, FromJson, ToJson, Clone, Default)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct CommitStats {
     #[bourne(default)]

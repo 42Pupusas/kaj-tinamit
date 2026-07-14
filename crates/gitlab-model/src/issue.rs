@@ -5,6 +5,7 @@ use json_bourne::{FromJson, Lexer, ToJson};
 use crate::user::UserState;
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum IssueState {
     Opened,
@@ -16,6 +17,7 @@ pub enum IssueState {
 /// `issue_type`. We accept both casings and fall back to [`IssueType::Unknown`]
 /// for values GitLab may add later, so parsing never fails on a new kind.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 pub enum IssueType {
     Issue,
     Incident,
@@ -51,6 +53,7 @@ impl ToJson for IssueType {
 }
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "UPPERCASE")]
 pub enum Severity {
     Unknown,
@@ -61,6 +64,7 @@ pub enum Severity {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Author {
     pub state: Option<UserState>,
@@ -72,6 +76,7 @@ pub struct Author {
 }
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum MilestoneState {
     Active,
@@ -79,6 +84,7 @@ pub enum MilestoneState {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Milestone {
     pub project_id: Option<i32>,
@@ -95,6 +101,7 @@ pub struct Milestone {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Assignee {
     pub state: Option<UserState>,
@@ -106,6 +113,7 @@ pub struct Assignee {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct TimeStats {
     #[bourne(default)]
@@ -117,6 +125,7 @@ pub struct TimeStats {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct References {
     pub short: Option<String>,
@@ -125,6 +134,7 @@ pub struct References {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct IssueLinks {
     #[bourne(rename = "self")]
@@ -136,6 +146,7 @@ pub struct IssueLinks {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct TaskCompletionStatus {
     #[bourne(default)]
@@ -145,6 +156,7 @@ pub struct TaskCompletionStatus {
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct GitlabIssue {
     pub state: Option<IssueState>,

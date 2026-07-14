@@ -5,6 +5,7 @@ use json_bourne::{FromJson, Lexer, ToJson};
 
 /// The kind of a repository tree entry.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 pub enum TreeEntryType {
     /// A directory.
     Tree,
@@ -43,6 +44,7 @@ impl ToJson for TreeEntryType {
 /// An entry in a repository tree listing
 /// (`GET /projects/:id/repository/tree`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct TreeEntry {
     pub id: String,
@@ -56,6 +58,7 @@ pub struct TreeEntry {
 /// A blob's metadata and Base64-encoded content
 /// (`GET /projects/:id/repository/blobs/:sha`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Blob {
     pub size: i64,
@@ -68,6 +71,7 @@ pub struct Blob {
 /// A repository contributor
 /// (`GET /projects/:id/repository/contributors`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Contributor {
     pub name: String,
@@ -84,6 +88,7 @@ pub struct Contributor {
 /// responses. Fields GitLab sometimes omits (like `web_url` on tags) are
 /// optional so a single type covers every ref context.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct RefCommit {
     pub id: String,
@@ -105,6 +110,7 @@ pub struct RefCommit {
 /// A repository branch
 /// (`GET /projects/:id/repository/branches[/:branch]`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Branch {
     pub name: String,
@@ -126,6 +132,7 @@ pub struct Branch {
 
 /// The release object embedded in a tag.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct TagRelease {
     pub tag_name: Option<String>,
@@ -135,6 +142,7 @@ pub struct TagRelease {
 /// A repository tag
 /// (`GET /projects/:id/repository/tags[/:tag_name]`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Tag {
     pub name: String,
@@ -150,6 +158,7 @@ pub struct Tag {
 /// A file's metadata and Base64-encoded content
 /// (`GET /projects/:id/repository/files/:file_path`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct RepositoryFile {
     pub file_name: String,
@@ -171,6 +180,7 @@ pub struct RepositoryFile {
 /// The commit portion of a blame range. Blame commits omit `web_url` and
 /// `short_id`, so this is a distinct, minimal shape.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct BlameCommit {
     pub id: String,
@@ -188,6 +198,7 @@ pub struct BlameCommit {
 /// A blame range: a run of consecutive lines attributed to one commit
 /// (`GET /projects/:id/repository/files/:file_path/blame`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct BlameRange {
     pub commit: BlameCommit,
@@ -198,6 +209,7 @@ pub struct BlameRange {
 /// Generated changelog data
 /// (`GET /projects/:id/repository/changelog`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Changelog {
     /// Generated changelog in Markdown format.

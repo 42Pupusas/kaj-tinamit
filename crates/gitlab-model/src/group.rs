@@ -7,6 +7,7 @@ use crate::project::Visibility;
 /// Another group a group is shared with
 /// (`shared_with_groups[]` in a group response).
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct SharedWithGroup {
     pub group_id: i64,
@@ -22,6 +23,7 @@ pub struct SharedWithGroup {
 /// The deprecated inline `projects` / `shared_projects` arrays are omitted;
 /// use the dedicated group-projects endpoints instead.
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct GitlabGroup {
     pub id: i64,
@@ -46,6 +48,7 @@ pub struct GitlabGroup {
 /// A concise reference to who created a membership
 /// (`created_by` in a member response).
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct MemberCreatedBy {
     pub id: i64,
@@ -61,6 +64,7 @@ pub struct MemberCreatedBy {
 /// `access_level` is GitLab's numeric role (10 Guest … 50 Owner); see
 /// [`AccessLevel`] to interpret it.
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Member {
     pub id: i64,

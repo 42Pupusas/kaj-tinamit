@@ -3,6 +3,7 @@
 use json_bourne::{FromJson, ToJson};
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "snake_case")]
 pub enum UserState {
     Active,
@@ -12,6 +13,7 @@ pub enum UserState {
 }
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Hash, Eq, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct GitlabUser {
     pub id: i32,

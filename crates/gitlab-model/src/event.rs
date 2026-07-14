@@ -7,6 +7,7 @@ use json_bourne::{FromJson, ToJson};
 /// Returned by the events API. The fields here are the stable subset most
 /// callers rely on for activity discovery; GitLab sends many more.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct GitlabEvent {
     /// Numeric event id.
@@ -25,6 +26,7 @@ pub struct GitlabEvent {
 
 /// The actor behind an event.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct EventAuthor {
     pub id: Option<i32>,

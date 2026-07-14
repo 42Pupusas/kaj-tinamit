@@ -6,10 +6,20 @@
 
 use json_bourne::{FromJson, Lexer, ToJson};
 
+/// A proptest strategy yielding `Option<f64>` restricted to finite values.
+///
+/// GitLab durations/coverage are always finite; excluding NaN/inf keeps the
+/// JSON round-trip well-defined (those have no JSON representation).
+#[cfg(feature = "proptest")]
+fn finite_opt_f64() -> impl proptest::strategy::Strategy<Value = Option<f64>> {
+    proptest::option::of(-1e12f64..1e12f64)
+}
+
 /// The status of a pipeline or job. A single closed-ish set shared by both;
 /// unknown values fall back to [`CiStatus::Unknown`] so parsing never fails
 /// on a status GitLab adds later.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 pub enum CiStatus {
     Created,
     WaitingForResource,
@@ -73,6 +83,7 @@ impl ToJson for CiStatus {
 
 /// The user who triggered a pipeline or owns a job (a concise subset).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct CiUser {
     pub id: i64,
@@ -85,6 +96,7 @@ pub struct CiUser {
 
 /// A pipeline as returned by the list endpoint (`GET /projects/:id/pipelines`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct PipelineSummary {
     pub id: i64,
@@ -106,6 +118,7 @@ pub struct PipelineSummary {
 /// (`GET /projects/:id/pipelines/:pipeline_id`), with timing and the
 /// triggering user.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct PipelineDetail {
     pub id: i64,
@@ -128,7 +141,9 @@ pub struct PipelineDetail {
     pub started_at: Option<String>,
     pub finished_at: Option<String>,
     pub committed_at: Option<String>,
+    #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub duration: Option<f64>,
+    #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub queued_duration: Option<f64>,
     pub coverage: Option<String>,
     pub web_url: Option<String>,
@@ -139,6 +154,7 @@ pub struct PipelineDetail {
 /// A single CI/CD variable attached to a pipeline
 /// (`GET /projects/:id/pipelines/:pipeline_id/variables`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct PipelineVariable {
     pub key: String,
@@ -148,6 +164,7 @@ pub struct PipelineVariable {
 
 /// A file produced by a job (`artifacts[]` in a job response).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct JobArtifact {
     pub file_type: Option<String>,
@@ -159,6 +176,7 @@ pub struct JobArtifact {
 
 /// The `artifacts_file` summary object on a job.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct ArtifactsFile {
     pub filename: Option<String>,
@@ -168,6 +186,7 @@ pub struct ArtifactsFile {
 
 /// The commit a job was run against (a concise subset).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct JobCommit {
     pub id: Option<String>,
@@ -181,6 +200,7 @@ pub struct JobCommit {
 
 /// The pipeline reference embedded in a job.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct JobPipeline {
     pub id: i64,
@@ -193,6 +213,7 @@ pub struct JobPipeline {
 
 /// The runner that executed a job.
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct JobRunner {
     pub id: i64,
@@ -209,6 +230,7 @@ pub struct JobRunner {
 /// A CI/CD job (`GET /projects/:id/jobs`, `.../jobs/:job_id`, and the
 /// pipeline-scoped listings).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Job {
     pub id: i64,
@@ -225,8 +247,11 @@ pub struct Job {
     pub archived: bool,
     pub source: Option<String>,
     pub failure_reason: Option<String>,
+    #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub coverage: Option<f64>,
+    #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub duration: Option<f64>,
+    #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub queued_duration: Option<f64>,
     pub created_at: Option<String>,
     pub started_at: Option<String>,

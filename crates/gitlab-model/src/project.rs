@@ -3,6 +3,7 @@
 use json_bourne::{FromJson, ToJson};
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum Visibility {
     Public,
@@ -11,6 +12,7 @@ pub enum Visibility {
 }
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum NamespaceKind {
     User,
@@ -18,6 +20,7 @@ pub enum NamespaceKind {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct Namespace {
     pub id: i32,
@@ -30,6 +33,7 @@ pub struct Namespace {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct GitlabProject {
     pub id: i32,

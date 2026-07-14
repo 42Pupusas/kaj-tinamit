@@ -3,6 +3,7 @@
 use json_bourne::{FromJson, ToJson};
 
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(rename_all = "lowercase")]
 pub enum WikiFormat {
     Markdown,
@@ -13,6 +14,7 @@ pub enum WikiFormat {
 
 /// A full wiki page (list entries omit `content`).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct WikiPage {
     pub slug: String,
@@ -24,6 +26,7 @@ pub struct WikiPage {
 
 /// A wiki page as it appears in a listing (no content).
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct WikiPageList {
     pub slug: String,
@@ -31,6 +34,7 @@ pub struct WikiPageList {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct WikiAttachment {
     pub file_name: String,
@@ -40,6 +44,7 @@ pub struct WikiAttachment {
 }
 
 #[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
 pub struct WikiAttachmentLink {
     pub url: String,
