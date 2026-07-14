@@ -44,10 +44,7 @@ pub trait ProtectedEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn protected_environments(
-        &self,
-        project_id: i64,
-    ) -> Result<Vec<ProtectedEnvironment>, Error>;
+    fn protected_environments(&self, project_id: i64) -> Result<Vec<ProtectedEnvironment>, Error>;
 
     /// Retrieve a single protected environment by name.
     ///
@@ -84,10 +81,7 @@ impl ProtectedEndpoints for GitlabClient {
         ))
     }
 
-    fn protected_environments(
-        &self,
-        project_id: i64,
-    ) -> Result<Vec<ProtectedEnvironment>, Error> {
+    fn protected_environments(&self, project_id: i64) -> Result<Vec<ProtectedEnvironment>, Error> {
         self.get_paginated(&format!(
             "api/v4/projects/{project_id}/protected_environments"
         ))

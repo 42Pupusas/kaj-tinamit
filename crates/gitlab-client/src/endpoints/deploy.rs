@@ -86,11 +86,7 @@ pub trait DeployTokenEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_deploy_token(
-        &self,
-        project_id: i64,
-        token_id: i64,
-    ) -> Result<DeployToken, Error>;
+    fn project_deploy_token(&self, project_id: i64, token_id: i64) -> Result<DeployToken, Error>;
 
     /// List a group's deploy tokens.
     ///
@@ -104,11 +100,7 @@ pub trait DeployTokenEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn group_deploy_token(
-        &self,
-        group_id: i64,
-        token_id: i64,
-    ) -> Result<DeployToken, Error>;
+    fn group_deploy_token(&self, group_id: i64, token_id: i64) -> Result<DeployToken, Error>;
 }
 
 impl DeployTokenEndpoints for GitlabClient {
@@ -120,11 +112,7 @@ impl DeployTokenEndpoints for GitlabClient {
         self.get_paginated(&format!("api/v4/projects/{project_id}/deploy_tokens"))
     }
 
-    fn project_deploy_token(
-        &self,
-        project_id: i64,
-        token_id: i64,
-    ) -> Result<DeployToken, Error> {
+    fn project_deploy_token(&self, project_id: i64, token_id: i64) -> Result<DeployToken, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/deploy_tokens/{token_id}"
         ))
@@ -134,11 +122,7 @@ impl DeployTokenEndpoints for GitlabClient {
         self.get_paginated(&format!("api/v4/groups/{group_id}/deploy_tokens"))
     }
 
-    fn group_deploy_token(
-        &self,
-        group_id: i64,
-        token_id: i64,
-    ) -> Result<DeployToken, Error> {
+    fn group_deploy_token(&self, group_id: i64, token_id: i64) -> Result<DeployToken, Error> {
         self.get(&format!(
             "api/v4/groups/{group_id}/deploy_tokens/{token_id}"
         ))

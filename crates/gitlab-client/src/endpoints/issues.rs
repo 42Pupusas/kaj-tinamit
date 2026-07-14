@@ -1,10 +1,176 @@
 //! Issue endpoints and the [`IssueQuery`] filter builder.
 
 use gitlab_model::{GitlabIssue, IssueStatistics};
+use json_bourne::ToJson;
 
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
+
+/// Body for creating an issue via `POST /projects/:id/issues`.
+///
+/// Only `title` is required; every other field is omitted from the JSON
+/// payload when unset (via `skip_if_none`), so GitLab applies its own
+/// defaults. Build fluently, then hand to [`IssueEndpoints::create_issue`].
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+pub struct CreateIssue {
+    pub title: String,
+    #[bourne(skip_if_none)]
+    pub description: Option<String>,
+    #[bourne(skip_if_none)]
+    pub labels: Option<String>,
+    #[bourne(skip_if_none)]
+    pub assignee_ids: Option<Vec<i64>>,
+    #[bourne(skip_if_none)]
+    pub milestone_id: Option<i64>,
+    #[bourne(skip_if_none)]
+    pub confidential: Option<bool>,
+    #[bourne(skip_if_none)]
+    pub due_date: Option<String>,
+}
+
+impl CreateIssue {
+    /// Start a new issue with the given (required) title.
+    #[must_use]
+    pub fn new(title: impl Into<String>) -> Self {
+        Self {
+            title: title.into(),
+            description: None,
+            labels: None,
+            assignee_ids: None,
+            milestone_id: None,
+            confidential: None,
+            due_date: None,
+        }
+    }
+
+    #[must_use]
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    /// Set labels; GitLab wants a comma-separated list, so `labels` is joined.
+    #[must_use]
+    pub fn with_labels(mut self, labels: &[&str]) -> Self {
+        self.labels = Some(labels.join(","));
+        self
+    }
+
+    #[must_use]
+    pub fn with_assignees(mut self, assignee_ids: Vec<i64>) -> Self {
+        self.assignee_ids = Some(assignee_ids);
+        self
+    }
+
+    #[must_use]
+    pub fn with_milestone(mut self, milestone_id: i64) -> Self {
+        self.milestone_id = Some(milestone_id);
+        self
+    }
+
+    #[must_use]
+    pub fn confidential(mut self, confidential: bool) -> Self {
+        self.confidential = Some(confidential);
+        self
+    }
+
+    #[must_use]
+    pub fn with_due_date(mut self, due_date: impl Into<String>) -> Self {
+        self.due_date = Some(due_date.into());
+        self
+    }
+}
+
+/// Body for updating an issue via `PUT /projects/:id/issues/:iid`.
+///
+/// Every field is optional and omitted when unset, so an update touches
+/// only the fields you set. `state_event` drives close/reopen
+/// (`"close"` / `"reopen"`).
+#[derive(Debug, Clone, Default, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+pub struct UpdateIssue {
+    #[bourne(skip_if_none)]
+    pub title: Option<String>,
+    #[bourne(skip_if_none)]
+    pub description: Option<String>,
+    #[bourne(skip_if_none)]
+    pub labels: Option<String>,
+    #[bourne(skip_if_none)]
+    pub assignee_ids: Option<Vec<i64>>,
+    #[bourne(skip_if_none)]
+    pub milestone_id: Option<i64>,
+    #[bourne(skip_if_none)]
+    pub state_event: Option<String>,
+    #[bourne(skip_if_none)]
+    pub confidential: Option<bool>,
+    #[bourne(skip_if_none)]
+    pub due_date: Option<String>,
+}
+
+impl UpdateIssue {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub fn with_title(mut self, title: impl Into<String>) -> Self {
+        self.title = Some(title.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_labels(mut self, labels: &[&str]) -> Self {
+        self.labels = Some(labels.join(","));
+        self
+    }
+
+    #[must_use]
+    pub fn with_assignees(mut self, assignee_ids: Vec<i64>) -> Self {
+        self.assignee_ids = Some(assignee_ids);
+        self
+    }
+
+    #[must_use]
+    pub fn with_milestone(mut self, milestone_id: i64) -> Self {
+        self.milestone_id = Some(milestone_id);
+        self
+    }
+
+    /// Close the issue on update.
+    #[must_use]
+    pub fn close(mut self) -> Self {
+        self.state_event = Some("close".to_string());
+        self
+    }
+
+    /// Reopen the issue on update.
+    #[must_use]
+    pub fn reopen(mut self) -> Self {
+        self.state_event = Some("reopen".to_string());
+        self
+    }
+
+    #[must_use]
+    pub fn confidential(mut self, confidential: bool) -> Self {
+        self.confidential = Some(confidential);
+        self
+    }
+
+    #[must_use]
+    pub fn with_due_date(mut self, due_date: impl Into<String>) -> Self {
+        self.due_date = Some(due_date.into());
+        self
+    }
+}
 
 /// Query parameters for filtering issues. Build fluently, then hand to
 /// [`GitlabClient::issues`] or [`GitlabClient::project_issues`].
@@ -191,6 +357,32 @@ pub trait IssueEndpoints {
         project_id: i32,
         query: &IssueQuery,
     ) -> Result<IssueStatistics, Error>;
+
+    /// Create a new issue in a project. Returns the created issue.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn create_issue(&self, project_id: i32, issue: &CreateIssue) -> Result<GitlabIssue, Error>;
+
+    /// Update an existing issue (by IID). Returns the updated issue.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn update_issue(
+        &self,
+        project_id: i32,
+        issue_iid: i32,
+        update: &UpdateIssue,
+    ) -> Result<GitlabIssue, Error>;
+
+    /// Delete an issue (by IID). Requires elevated permissions on GitLab.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_issue(&self, project_id: i32, issue_iid: i32) -> Result<(), Error>;
 }
 
 impl IssueEndpoints for GitlabClient {
@@ -249,6 +441,26 @@ impl IssueEndpoints for GitlabClient {
             query.to_query_string()
         ))
     }
+
+    fn create_issue(&self, project_id: i32, issue: &CreateIssue) -> Result<GitlabIssue, Error> {
+        self.post(&format!("api/v4/projects/{project_id}/issues"), issue)
+    }
+
+    fn update_issue(
+        &self,
+        project_id: i32,
+        issue_iid: i32,
+        update: &UpdateIssue,
+    ) -> Result<GitlabIssue, Error> {
+        self.put(
+            &format!("api/v4/projects/{project_id}/issues/{issue_iid}"),
+            update,
+        )
+    }
+
+    fn delete_issue(&self, project_id: i32, issue_iid: i32) -> Result<(), Error> {
+        self.delete(&format!("api/v4/projects/{project_id}/issues/{issue_iid}"))
+    }
 }
 
 #[cfg(test)]
@@ -270,6 +482,31 @@ mod tests {
         assert!(qs.contains("scope=all"));
         // Colons are percent-encoded to %3A.
         assert!(qs.contains("updated_after=2021-01-01T00%3A00%3A00Z"));
+    }
+
+    #[test]
+    fn create_issue_serializes_only_set_fields() {
+        let body = CreateIssue::new("Bug").with_labels(&["bug", "p1"]);
+        let json = json_bourne::to_string(&body).unwrap();
+        assert!(json.contains("\"title\":\"Bug\""));
+        assert!(json.contains("\"labels\":\"bug,p1\""));
+        // Unset optionals must be omitted, not emitted as null.
+        assert!(!json.contains("description"));
+        assert!(!json.contains("assignee_ids"));
+        assert!(!json.contains("null"));
+    }
+
+    #[test]
+    fn update_issue_close_sets_state_event() {
+        let body = UpdateIssue::new().close();
+        let json = json_bourne::to_string(&body).unwrap();
+        assert_eq!(json, "{\"state_event\":\"close\"}");
+    }
+
+    #[test]
+    fn update_issue_empty_is_empty_object() {
+        let json = json_bourne::to_string(&UpdateIssue::new()).unwrap();
+        assert_eq!(json, "{}");
     }
 
     #[test]

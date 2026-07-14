@@ -61,15 +61,11 @@ impl EpicEndpoints for GitlabClient {
     }
 
     fn epic_issues(&self, group_id: i64, epic_iid: i64) -> Result<Vec<EpicIssue>, Error> {
-        self.get_paginated(&format!(
-            "api/v4/groups/{group_id}/epics/{epic_iid}/issues"
-        ))
+        self.get_paginated(&format!("api/v4/groups/{group_id}/epics/{epic_iid}/issues"))
     }
 
     fn epic_children(&self, group_id: i64, epic_iid: i64) -> Result<Vec<Epic>, Error> {
-        self.get_paginated(&format!(
-            "api/v4/groups/{group_id}/epics/{epic_iid}/epics"
-        ))
+        self.get_paginated(&format!("api/v4/groups/{group_id}/epics/{epic_iid}/epics"))
     }
 
     fn epic_related(&self, group_id: i64, epic_iid: i64) -> Result<Vec<Epic>, Error> {

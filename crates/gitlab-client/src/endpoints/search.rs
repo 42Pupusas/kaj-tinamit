@@ -82,11 +82,8 @@ pub trait SearchEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_search_issues(
-        &self,
-        project_id: i64,
-        term: &str,
-    ) -> Result<Vec<GitlabIssue>, Error>;
+    fn project_search_issues(&self, project_id: i64, term: &str)
+    -> Result<Vec<GitlabIssue>, Error>;
 
     /// Search merge requests within a project.
     ///
@@ -104,11 +101,7 @@ pub trait SearchEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_search_blobs(
-        &self,
-        project_id: i64,
-        term: &str,
-    ) -> Result<Vec<SearchBlob>, Error>;
+    fn project_search_blobs(&self, project_id: i64, term: &str) -> Result<Vec<SearchBlob>, Error>;
 }
 
 impl SearchEndpoints for GitlabClient {
@@ -156,11 +149,7 @@ impl SearchEndpoints for GitlabClient {
         self.get_paginated(&Scope::Project(project_id).path("merge_requests", term))
     }
 
-    fn project_search_blobs(
-        &self,
-        project_id: i64,
-        term: &str,
-    ) -> Result<Vec<SearchBlob>, Error> {
+    fn project_search_blobs(&self, project_id: i64, term: &str) -> Result<Vec<SearchBlob>, Error> {
         self.get_paginated(&Scope::Project(project_id).path("blobs", term))
     }
 }

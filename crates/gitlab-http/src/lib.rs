@@ -189,6 +189,18 @@ pub fn post(url: impl Into<String>) -> Request {
     Request::new(Method::Post, url)
 }
 
+/// Begin a PUT request.
+#[must_use]
+pub fn put(url: impl Into<String>) -> Request {
+    Request::new(Method::Put, url)
+}
+
+/// Begin a DELETE request.
+#[must_use]
+pub fn delete(url: impl Into<String>) -> Request {
+    Request::new(Method::Delete, url)
+}
+
 /// Begin a request with an arbitrary method.
 #[must_use]
 pub fn request(method: Method, url: impl Into<String>) -> Request {

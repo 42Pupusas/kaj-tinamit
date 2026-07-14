@@ -102,24 +102,112 @@ impl GitlabClient {
     }
 
     /// Perform a POST request with a JSON body and parse the JSON response.
-    // Scaffolding for write endpoints (create issue, comment, …) — not yet
-    // exercised by a public method.
-    #[allow(dead_code)]
     pub(crate) fn post<B, T>(&self, path: &str, body: &B) -> Result<T, Error>
+    where
+        B: ToJson,
+        T: for<'de> FromJson<'de>,
+    {
+        self.send_with_body(HttpMethod::Post, path, body)
+    }
+
+    /// Perform a POST request with no request body, parsing the JSON response.
+    ///
+    /// For action-style endpoints (e.g. cancel a pipeline, mark a to-do
+    /// done) where GitLab takes the target from the path, not a payload.
+    pub(crate) fn post_no_body<T>(&self, path: &str) -> Result<T, Error>
+    where
+        T: for<'de> FromJson<'de>,
+    {
+        self.send_no_body(HttpMethod::Post, path)
+    }
+
+    /// Perform a PUT request with a JSON body and parse the JSON response.
+    pub(crate) fn put<B, T>(&self, path: &str, body: &B) -> Result<T, Error>
+    where
+        B: ToJson,
+        T: for<'de> FromJson<'de>,
+    {
+        self.send_with_body(HttpMethod::Put, path, body)
+    }
+
+    /// Perform a bodyless POST whose response is discarded (204-style
+    /// action endpoints, e.g. “mark all to-dos done”).
+    pub(crate) fn post_discard(&self, path: &str) -> Result<(), Error> {
+        let url = format!("{}/{}", self.base_url, path);
+        let response = gitlab_http::post(&url)
+            .header("Authorization", self.auth())
+            .send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method: HttpMethod::Post,
+                status: response.status,
+            });
+        }
+        Ok(())
+    }
+
+    /// Perform a DELETE request, discarding any response body.
+    ///
+    /// GitLab returns `204 No Content` for most deletes, so there is
+    /// nothing to parse — a 2xx status is success.
+    pub(crate) fn delete(&self, path: &str) -> Result<(), Error> {
+        let url = format!("{}/{}", self.base_url, path);
+        let response = gitlab_http::delete(&url)
+            .header("Authorization", self.auth())
+            .send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method: HttpMethod::Delete,
+                status: response.status,
+            });
+        }
+        Ok(())
+    }
+
+    /// Shared body of [`Self::post`] / [`Self::put`]: serialize `body`,
+    /// send it with `method`, and parse the JSON response into `T`.
+    fn send_with_body<B, T>(&self, method: HttpMethod, path: &str, body: &B) -> Result<T, Error>
     where
         B: ToJson,
         T: for<'de> FromJson<'de>,
     {
         let url = format!("{}/{}", self.base_url, path);
         let payload = json_bourne::to_vec(body)?;
-        let response = gitlab_http::post(&url)
+        let request = match method {
+            HttpMethod::Put => gitlab_http::put(&url),
+            _ => gitlab_http::post(&url),
+        };
+        let response = request
             .header("Authorization", self.auth())
             .json(payload)
             .send()?;
 
         if !response.is_success() {
             return Err(Error::Api {
-                method: HttpMethod::Post,
+                method,
+                status: response.status,
+            });
+        }
+        Ok(parse_str(&response.body)?)
+    }
+
+    /// Shared body for bodyless POST/PUT actions that still return JSON.
+    fn send_no_body<T>(&self, method: HttpMethod, path: &str) -> Result<T, Error>
+    where
+        T: for<'de> FromJson<'de>,
+    {
+        let url = format!("{}/{}", self.base_url, path);
+        let request = match method {
+            HttpMethod::Put => gitlab_http::put(&url),
+            _ => gitlab_http::post(&url),
+        };
+        let response = request.header("Authorization", self.auth()).send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method,
                 status: response.status,
             });
         }

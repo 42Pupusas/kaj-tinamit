@@ -59,6 +59,9 @@ impl MetadataEndpoints for GitlabClient {
     }
 
     fn namespace(&self, id_or_path: &str) -> Result<NamespaceListing, Error> {
-        self.get(&format!("api/v4/namespaces/{}", id_or_path.percent_encode()))
+        self.get(&format!(
+            "api/v4/namespaces/{}",
+            id_or_path.percent_encode()
+        ))
     }
 }

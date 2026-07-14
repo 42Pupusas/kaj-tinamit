@@ -137,7 +137,9 @@ fn notes_smoke() {
 
     let mut found = false;
     for issue in issues.iter().take(50) {
-        let Some(pid) = issue.project_id else { continue };
+        let Some(pid) = issue.project_id else {
+            continue;
+        };
         let notes = client
             .issue_notes(i64::from(pid), i64::from(issue.iid))
             .expect("issue_notes failed");
@@ -586,7 +588,9 @@ fn todos_smoke() {
         );
     }
     // The `done` filter must also parse a valid response.
-    let done = client.todos_by_state("done").expect("todos_by_state failed");
+    let done = client
+        .todos_by_state("done")
+        .expect("todos_by_state failed");
     eprintln!("done to-dos: {}", done.len());
 }
 
@@ -776,7 +780,9 @@ fn issue_links_and_events_smoke() {
     let mut linked = false;
     let mut evented = false;
     for issue in issues.iter().take(50) {
-        let Some(pid) = issue.project_id else { continue };
+        let Some(pid) = issue.project_id else {
+            continue;
+        };
         let pid = i64::from(pid);
         let iid = i64::from(issue.iid);
 
@@ -862,7 +868,9 @@ fn commit_statuses_and_artifacts_smoke() {
         let Ok(commits) = client.commits(pid, None) else {
             continue;
         };
-        let Some(head) = commits.first() else { continue };
+        let Some(head) = commits.first() else {
+            continue;
+        };
         let statuses = client
             .commit_statuses(pid, &head.id)
             .expect("commit_statuses failed");
@@ -967,7 +975,9 @@ fn award_emoji_smoke() {
     let issues = client.issues(&query).expect("issues failed");
 
     for issue in issues.iter().take(50) {
-        let Some(pid) = issue.project_id else { continue };
+        let Some(pid) = issue.project_id else {
+            continue;
+        };
         let awards = client
             .issue_award_emoji(i64::from(pid), i64::from(issue.iid))
             .expect("issue_award_emoji failed");

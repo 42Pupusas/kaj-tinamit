@@ -43,10 +43,15 @@ pub use epics::EpicEndpoints;
 pub use events::EventEndpoints;
 pub use groups::{GroupEndpoints, MemberEndpoints};
 pub use issue_links::IssueLinkEndpoints;
-pub use issues::{IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter};
+pub use issues::{
+    CreateIssue, IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, UpdateIssue,
+};
 pub use iterations::IterationEndpoints;
-pub use labels::LabelEndpoints;
-pub use merge_requests::{MergeRequestEndpoints, MergeRequestQuery};
+pub use labels::{CreateLabel, LabelEndpoints, UpdateLabel};
+pub use merge_requests::{
+    AcceptMergeRequest, CreateMergeRequest, MergeRequestEndpoints, MergeRequestQuery,
+    UpdateMergeRequest,
+};
 pub use metadata::MetadataEndpoints;
 pub use milestones::MilestoneEndpoints;
 pub use notes::NoteEndpoints;

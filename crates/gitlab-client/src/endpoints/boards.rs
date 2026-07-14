@@ -30,8 +30,7 @@ pub trait BoardEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_board_lists(&self, project_id: i64, board_id: i64)
-    -> Result<Vec<BoardList>, Error>;
+    fn project_board_lists(&self, project_id: i64, board_id: i64) -> Result<Vec<BoardList>, Error>;
 
     /// List a group's issue boards.
     ///
@@ -64,11 +63,7 @@ impl BoardEndpoints for GitlabClient {
         self.get(&format!("api/v4/projects/{project_id}/boards/{board_id}"))
     }
 
-    fn project_board_lists(
-        &self,
-        project_id: i64,
-        board_id: i64,
-    ) -> Result<Vec<BoardList>, Error> {
+    fn project_board_lists(&self, project_id: i64, board_id: i64) -> Result<Vec<BoardList>, Error> {
         self.get_paginated(&format!(
             "api/v4/projects/{project_id}/boards/{board_id}/lists"
         ))
@@ -83,8 +78,6 @@ impl BoardEndpoints for GitlabClient {
     }
 
     fn group_board_lists(&self, group_id: i64, board_id: i64) -> Result<Vec<BoardList>, Error> {
-        self.get_paginated(&format!(
-            "api/v4/groups/{group_id}/boards/{board_id}/lists"
-        ))
+        self.get_paginated(&format!("api/v4/groups/{group_id}/boards/{board_id}/lists"))
     }
 }

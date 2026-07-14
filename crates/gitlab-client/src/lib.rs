@@ -28,14 +28,15 @@ mod pagination;
 
 pub use client::GitlabClient;
 pub use endpoints::{
-    AwardEmojiEndpoints, BoardEndpoints, CommitEndpoints, DeployKeyEndpoints, DeployTokenEndpoints,
-    DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints,
-    IssueEndpoints, IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter,
-    IterationEndpoints, JobEndpoints, LabelEndpoints, MemberEndpoints, MergeRequestEndpoints,
-    MergeRequestQuery, MetadataEndpoints, MilestoneEndpoints, NoteEndpoints, PipelineEndpoints,
-    PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
-    ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints,
-    RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints, TodoEndpoints, UserEndpoints,
+    AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CommitEndpoints, CreateIssue,
+    CreateLabel, CreateMergeRequest, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
+    EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
+    IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
+    LabelEndpoints, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MetadataEndpoints,
+    MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineQuery, PipelineScheduleEndpoints,
+    ProjectEndpoints, ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints,
+    RepositoryEndpoints, ResourceEventEndpoints, RunnerEndpoints, RunnerQuery, SearchEndpoints,
+    SnippetEndpoints, TodoEndpoints, UpdateIssue, UpdateLabel, UpdateMergeRequest, UserEndpoints,
     WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
