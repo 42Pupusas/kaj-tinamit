@@ -124,6 +124,7 @@ round_trip!(branch, Branch);
 round_trip!(tag_release, TagRelease);
 round_trip!(tag, Tag);
 round_trip!(repository_file, RepositoryFile);
+round_trip!(file_mutation_result, FileMutationResult);
 round_trip!(blame_commit, BlameCommit);
 round_trip!(blame_range, BlameRange);
 round_trip!(changelog, Changelog);

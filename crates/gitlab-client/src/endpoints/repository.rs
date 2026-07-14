@@ -1,18 +1,94 @@
-//! Repository read endpoints: the **Repository**, **Branches**, **Tags**,
-//! and **Repository files** API categories.
+//! Repository endpoints: the **Repository**, **Branches**, **Tags**, and
+//! **Repository files** API categories.
 //!
-//! Covers every read-only (GET) primitive in those categories. Write
-//! operations (create branch/tag/file, delete, changelog commit) are
-//! intentionally omitted.
+//! Reads cover trees/blobs/branches/tags/files/blame/compare; writes create
+//! and delete branches and tags, and create/update/delete repository files.
 
 use gitlab_model::{
-    BlameRange, Blob, Branch, Changelog, Contributor, RefCommit, RepositoryFile, Tag, TreeEntry,
+    BlameRange, Blob, Branch, Changelog, Contributor, FileMutationResult, RefCommit,
+    RepositoryFile, Tag, TreeEntry,
 };
-use json_bourne::FromJson;
+use json_bourne::{FromJson, ToJson};
 
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
+
+/// Body for creating or updating a repository file. `branch`,
+/// `content`, and `commit_message` are required; the rest are optional.
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+pub struct CommitFile {
+    pub branch: String,
+    pub content: String,
+    pub commit_message: String,
+    /// Set on update to move the file from another branch's tip.
+    #[bourne(skip_if_none)]
+    pub start_branch: Option<String>,
+    /// `text` (default) or `base64` — how `content` is encoded.
+    #[bourne(skip_if_none)]
+    pub encoding: Option<String>,
+    #[bourne(skip_if_none)]
+    pub author_email: Option<String>,
+    #[bourne(skip_if_none)]
+    pub author_name: Option<String>,
+    /// Required by GitLab on update to guard against lost updates.
+    #[bourne(skip_if_none)]
+    pub last_commit_id: Option<String>,
+}
+
+impl CommitFile {
+    #[must_use]
+    pub fn new(
+        branch: impl Into<String>,
+        content: impl Into<String>,
+        commit_message: impl Into<String>,
+    ) -> Self {
+        Self {
+            branch: branch.into(),
+            content: content.into(),
+            commit_message: commit_message.into(),
+            start_branch: None,
+            encoding: None,
+            author_email: None,
+            author_name: None,
+            last_commit_id: None,
+        }
+    }
+
+    /// Send `content` as base64 (for binary files).
+    #[must_use]
+    pub fn base64(mut self) -> Self {
+        self.encoding = Some("base64".to_string());
+        self
+    }
+
+    #[must_use]
+    pub fn with_author(mut self, name: impl Into<String>, email: impl Into<String>) -> Self {
+        self.author_name = Some(name.into());
+        self.author_email = Some(email.into());
+        self
+    }
+
+    /// Set the expected last commit ID (optimistic concurrency on update).
+    #[must_use]
+    pub fn with_last_commit_id(mut self, last_commit_id: impl Into<String>) -> Self {
+        self.last_commit_id = Some(last_commit_id.into());
+        self
+    }
+}
+
+/// Body for deleting a repository file.
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+struct DeleteFileBody {
+    branch: String,
+    commit_message: String,
+    #[bourne(skip_if_none)]
+    author_email: Option<String>,
+    #[bourne(skip_if_none)]
+    author_name: Option<String>,
+}
 
 /// The subset of `repository/compare` we expose alongside the commit-diff
 /// view in [`CommitEndpoints`](crate::CommitEndpoints): the full commit list.
@@ -160,6 +236,94 @@ pub trait RepositoryEndpoints {
         file_path: &str,
         ref_name: &str,
     ) -> Result<Vec<BlameRange>, Error>;
+
+    // ---- Writes: branches ----
+
+    /// Create a branch `branch` from `ref_name` (branch/tag/commit). Returns
+    /// the new branch.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn create_branch(&self, project_id: i64, branch: &str, ref_name: &str)
+    -> Result<Branch, Error>;
+
+    /// Delete a branch by name.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_branch(&self, project_id: i64, branch: &str) -> Result<(), Error>;
+
+    /// Delete all merged branches (bulk cleanup). GitLab performs this
+    /// asynchronously and returns `202 Accepted`.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_merged_branches(&self, project_id: i64) -> Result<(), Error>;
+
+    // ---- Writes: tags ----
+
+    /// Create a tag `tag_name` at `ref_name`, with an optional annotation
+    /// message. Returns the new tag.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn create_tag(
+        &self,
+        project_id: i64,
+        tag_name: &str,
+        ref_name: &str,
+        message: Option<&str>,
+    ) -> Result<Tag, Error>;
+
+    /// Delete a tag by name.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_tag(&self, project_id: i64, tag_name: &str) -> Result<(), Error>;
+
+    // ---- Writes: repository files ----
+
+    /// Create a new repository file. Returns the file path and branch.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn create_file(
+        &self,
+        project_id: i64,
+        file_path: &str,
+        commit: &CommitFile,
+    ) -> Result<FileMutationResult, Error>;
+
+    /// Update an existing repository file. Returns the file path and branch.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn update_file(
+        &self,
+        project_id: i64,
+        file_path: &str,
+        commit: &CommitFile,
+    ) -> Result<FileMutationResult, Error>;
+
+    /// Delete a repository file on `branch` with `commit_message`.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_file(
+        &self,
+        project_id: i64,
+        file_path: &str,
+        branch: &str,
+        commit_message: &str,
+    ) -> Result<(), Error>;
 }
 
 impl RepositoryEndpoints for GitlabClient {
@@ -299,5 +463,108 @@ impl RepositoryEndpoints for GitlabClient {
             file_path.percent_encode(),
             ref_name.percent_encode()
         ))
+    }
+
+    fn create_branch(
+        &self,
+        project_id: i64,
+        branch: &str,
+        ref_name: &str,
+    ) -> Result<Branch, Error> {
+        // Branch + ref go in the query string per GitLab's API.
+        self.post_no_body(&format!(
+            "api/v4/projects/{project_id}/repository/branches?branch={}&ref={}",
+            branch.percent_encode(),
+            ref_name.percent_encode()
+        ))
+    }
+
+    fn delete_branch(&self, project_id: i64, branch: &str) -> Result<(), Error> {
+        self.delete(&format!(
+            "api/v4/projects/{project_id}/repository/branches/{}",
+            branch.percent_encode()
+        ))
+    }
+
+    fn delete_merged_branches(&self, project_id: i64) -> Result<(), Error> {
+        self.delete(&format!(
+            "api/v4/projects/{project_id}/repository/merged_branches"
+        ))
+    }
+
+    fn create_tag(
+        &self,
+        project_id: i64,
+        tag_name: &str,
+        ref_name: &str,
+        message: Option<&str>,
+    ) -> Result<Tag, Error> {
+        let mut url = format!(
+            "api/v4/projects/{project_id}/repository/tags?tag_name={}&ref={}",
+            tag_name.percent_encode(),
+            ref_name.percent_encode()
+        );
+        if let Some(message) = message {
+            url.push_str(&format!("&message={}", message.percent_encode()));
+        }
+        self.post_no_body(&url)
+    }
+
+    fn delete_tag(&self, project_id: i64, tag_name: &str) -> Result<(), Error> {
+        self.delete(&format!(
+            "api/v4/projects/{project_id}/repository/tags/{}",
+            tag_name.percent_encode()
+        ))
+    }
+
+    fn create_file(
+        &self,
+        project_id: i64,
+        file_path: &str,
+        commit: &CommitFile,
+    ) -> Result<FileMutationResult, Error> {
+        self.post(
+            &format!(
+                "api/v4/projects/{project_id}/repository/files/{}",
+                file_path.percent_encode()
+            ),
+            commit,
+        )
+    }
+
+    fn update_file(
+        &self,
+        project_id: i64,
+        file_path: &str,
+        commit: &CommitFile,
+    ) -> Result<FileMutationResult, Error> {
+        self.put(
+            &format!(
+                "api/v4/projects/{project_id}/repository/files/{}",
+                file_path.percent_encode()
+            ),
+            commit,
+        )
+    }
+
+    fn delete_file(
+        &self,
+        project_id: i64,
+        file_path: &str,
+        branch: &str,
+        commit_message: &str,
+    ) -> Result<(), Error> {
+        self.delete_with_body(
+            &format!(
+                "api/v4/projects/{project_id}/repository/files/{}",
+                file_path.percent_encode()
+            ),
+            &DeleteFileBody {
+                branch: branch.to_string(),
+                commit_message: commit_message.to_string(),
+                author_email: None,
+                author_name: None,
+            },
+        )
     }
 }

@@ -177,6 +177,18 @@ pub struct RepositoryFile {
     pub execute_filemode: bool,
 }
 
+/// The result of a file create/update/delete
+/// (`POST`/`PUT`/`DELETE /projects/:id/repository/files/:file_path`).
+///
+/// GitLab echoes just the file path and the branch the change landed on.
+#[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[bourne(deny_unknown_fields = false)]
+pub struct FileMutationResult {
+    pub file_path: String,
+    pub branch: String,
+}
+
 /// The commit portion of a blame range. Blame commits omit `web_url` and
 /// `short_id`, so this is a distinct, minimal shape.
 #[derive(Debug, FromJson, ToJson, Clone)]

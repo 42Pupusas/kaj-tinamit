@@ -130,6 +130,29 @@ impl GitlabClient {
         self.send_with_body(HttpMethod::Put, path, body)
     }
 
+    /// Perform a DELETE request carrying a JSON body, discarding the
+    /// response. A few deletes (e.g. removing a repository file) require a
+    /// commit message + branch in the body.
+    pub(crate) fn delete_with_body<B>(&self, path: &str, body: &B) -> Result<(), Error>
+    where
+        B: ToJson,
+    {
+        let url = format!("{}/{}", self.base_url, path);
+        let payload = json_bourne::to_vec(body)?;
+        let response = gitlab_http::delete(&url)
+            .header("Authorization", self.auth())
+            .json(payload)
+            .send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method: HttpMethod::Delete,
+                status: response.status,
+            });
+        }
+        Ok(())
+    }
+
     /// Perform a bodyless POST whose response is discarded (204-style
     /// action endpoints, e.g. “mark all to-dos done”).
     pub(crate) fn post_discard(&self, path: &str) -> Result<(), Error> {
