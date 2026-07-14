@@ -98,6 +98,11 @@ round_trip!(approval, Approval);
 round_trip!(noteable_type, NoteableType);
 round_trip!(note, Note);
 
+// issue_link
+round_trip!(issue_link_type, IssueLinkType);
+round_trip!(issue_link, IssueLink);
+round_trip!(issue_link_result, IssueLinkResult);
+
 // event
 round_trip!(event, GitlabEvent);
 round_trip!(event_author, EventAuthor);

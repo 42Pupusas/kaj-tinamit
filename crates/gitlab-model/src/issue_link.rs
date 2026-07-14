@@ -4,6 +4,8 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::issue::GitlabIssue;
+
 /// The kind of relationship a link expresses, from the perspective of the
 /// issue the listing was requested for.
 #[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -39,6 +41,20 @@ pub struct IssueLink {
     pub link_created_at: Option<String>,
     pub link_updated_at: Option<String>,
     pub web_url: Option<String>,
+}
+
+/// The result of creating or deleting an issue link
+/// (`POST`/`DELETE /projects/:id/issues/:iid/links[/:link_id]`).
+///
+/// Unlike the listing shape [`IssueLink`], this response echoes the two
+/// full issues involved plus the relationship between them.
+#[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[bourne(deny_unknown_fields = false)]
+pub struct IssueLinkResult {
+    pub source_issue: GitlabIssue,
+    pub target_issue: GitlabIssue,
+    pub link_type: Option<IssueLinkType>,
 }
 
 #[cfg(test)]

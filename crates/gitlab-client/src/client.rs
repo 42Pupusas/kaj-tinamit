@@ -166,6 +166,28 @@ impl GitlabClient {
         Ok(())
     }
 
+    /// Perform a DELETE request and parse the JSON response body into `T`.
+    ///
+    /// A few deletes (e.g. removing an issue link) echo the affected
+    /// objects instead of returning `204`.
+    pub(crate) fn delete_with_response<T>(&self, path: &str) -> Result<T, Error>
+    where
+        T: for<'de> FromJson<'de>,
+    {
+        let url = format!("{}/{}", self.base_url, path);
+        let response = gitlab_http::delete(&url)
+            .header("Authorization", self.auth())
+            .send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method: HttpMethod::Delete,
+                status: response.status,
+            });
+        }
+        Ok(parse_str(&response.body)?)
+    }
+
     /// Shared body of [`Self::post`] / [`Self::put`]: serialize `body`,
     /// send it with `method`, and parse the JSON response into `T`.
     fn send_with_body<B, T>(&self, method: HttpMethod, path: &str, body: &B) -> Result<T, Error>

@@ -35,14 +35,14 @@ mod wikis;
 
 pub use award_emoji::AwardEmojiEndpoints;
 pub use boards::BoardEndpoints;
-pub use ci::{JobEndpoints, PipelineEndpoints, PipelineQuery};
+pub use ci::{JobEndpoints, PipelineEndpoints, PipelineInput, PipelineQuery};
 pub use commits::CommitEndpoints;
 pub use deploy::{DeployKeyEndpoints, DeployTokenEndpoints};
 pub use deployments::{DeploymentEndpoints, EnvironmentEndpoints};
 pub use epics::EpicEndpoints;
 pub use events::EventEndpoints;
 pub use groups::{GroupEndpoints, MemberEndpoints};
-pub use issue_links::IssueLinkEndpoints;
+pub use issue_links::{IssueLinkEndpoints, LinkType};
 pub use issues::{
     CreateIssue, IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, UpdateIssue,
 };
@@ -53,7 +53,7 @@ pub use merge_requests::{
     UpdateMergeRequest,
 };
 pub use metadata::MetadataEndpoints;
-pub use milestones::MilestoneEndpoints;
+pub use milestones::{CreateMilestone, MilestoneEndpoints, UpdateMilestone};
 pub use notes::NoteEndpoints;
 pub use pipeline_schedules::PipelineScheduleEndpoints;
 pub use projects::ProjectEndpoints;
@@ -66,4 +66,4 @@ pub use search::SearchEndpoints;
 pub use snippets::{ProjectSnippetEndpoints, SnippetEndpoints};
 pub use todos::TodoEndpoints;
 pub use users::UserEndpoints;
-pub use wikis::WikiEndpoints;
+pub use wikis::{CreateWikiPage, UpdateWikiPage, WikiEndpoints};

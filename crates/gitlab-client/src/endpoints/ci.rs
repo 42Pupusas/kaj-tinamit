@@ -1,13 +1,57 @@
-//! CI/CD read endpoints: the **Pipelines** and **Jobs** API categories.
+//! CI/CD endpoints: the **Pipelines** and **Jobs** API categories.
 //!
-//! All read-only (GET). Create/retry/cancel/delete/play are intentionally
-//! omitted.
+//! Reads list pipelines/jobs and their variables/traces; writes create a
+//! pipeline, retry/cancel/delete one, and play/retry/cancel/erase a job.
 
 use gitlab_model::{Job, PipelineDetail, PipelineSummary, PipelineVariable};
+use json_bourne::ToJson;
 
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
+
+/// A CI/CD variable passed when triggering a pipeline.
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+pub struct PipelineInput {
+    pub key: String,
+    pub value: String,
+    /// `env_var` (default) or `file`.
+    #[bourne(skip_if_none)]
+    pub variable_type: Option<String>,
+}
+
+impl PipelineInput {
+    /// A simple `env_var` key/value input.
+    #[must_use]
+    pub fn env(key: impl Into<String>, value: impl Into<String>) -> Self {
+        Self {
+            key: key.into(),
+            value: value.into(),
+            variable_type: None,
+        }
+    }
+
+    /// A `file`-type input (value becomes the file contents).
+    #[must_use]
+    pub fn file(key: impl Into<String>, value: impl Into<String>) -> Self {
+        Self {
+            key: key.into(),
+            value: value.into(),
+            variable_type: Some("file".to_string()),
+        }
+    }
+}
+
+/// Body for creating a pipeline (`POST /projects/:id/pipeline`).
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+struct CreatePipelineBody {
+    #[bourne(rename = "ref")]
+    ref_name: String,
+    #[bourne(skip_if_none)]
+    variables: Option<Vec<PipelineInput>>,
+}
 
 /// Filters for [`PipelineEndpoints::pipelines`]. Empty by default; each
 /// setter narrows the listing. Values are percent-encoded.
@@ -118,6 +162,42 @@ pub trait PipelineEndpoints {
         project_id: i64,
         pipeline_id: i64,
     ) -> Result<Vec<PipelineVariable>, Error>;
+
+    // --- Writes ---
+
+    /// Create (trigger) a new pipeline on `ref_name`, optionally passing
+    /// CI/CD `variables`. Returns the created pipeline.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn create_pipeline(
+        &self,
+        project_id: i64,
+        ref_name: &str,
+        variables: Vec<PipelineInput>,
+    ) -> Result<PipelineDetail, Error>;
+
+    /// Retry failed/canceled jobs in a pipeline. Returns the pipeline.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn retry_pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<PipelineDetail, Error>;
+
+    /// Cancel a pipeline's jobs. Returns the pipeline.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn cancel_pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<PipelineDetail, Error>;
+
+    /// Delete a pipeline and its jobs/artifacts.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<(), Error>;
 }
 
 impl PipelineEndpoints for GitlabClient {
@@ -160,6 +240,41 @@ impl PipelineEndpoints for GitlabClient {
     ) -> Result<Vec<PipelineVariable>, Error> {
         self.get_paginated(&format!(
             "api/v4/projects/{project_id}/pipelines/{pipeline_id}/variables"
+        ))
+    }
+
+    fn create_pipeline(
+        &self,
+        project_id: i64,
+        ref_name: &str,
+        variables: Vec<PipelineInput>,
+    ) -> Result<PipelineDetail, Error> {
+        let body = CreatePipelineBody {
+            ref_name: ref_name.to_string(),
+            variables: if variables.is_empty() {
+                None
+            } else {
+                Some(variables)
+            },
+        };
+        self.post(&format!("api/v4/projects/{project_id}/pipeline"), &body)
+    }
+
+    fn retry_pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<PipelineDetail, Error> {
+        self.post_no_body(&format!(
+            "api/v4/projects/{project_id}/pipelines/{pipeline_id}/retry"
+        ))
+    }
+
+    fn cancel_pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<PipelineDetail, Error> {
+        self.post_no_body(&format!(
+            "api/v4/projects/{project_id}/pipelines/{pipeline_id}/cancel"
+        ))
+    }
+
+    fn delete_pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<(), Error> {
+        self.delete(&format!(
+            "api/v4/projects/{project_id}/pipelines/{pipeline_id}"
         ))
     }
 }
@@ -216,6 +331,36 @@ pub trait JobEndpoints {
         job_id: i64,
         artifact_path: &str,
     ) -> Result<String, Error>;
+
+    // --- Writes ---
+
+    /// Play (run) a manual job. Returns the job.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn play_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error>;
+
+    /// Retry a failed/canceled job. Returns the new job.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn retry_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error>;
+
+    /// Cancel a running job. Returns the job.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn cancel_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error>;
+
+    /// Erase a job (remove artifacts and trace). Returns the job.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn erase_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error>;
 }
 
 impl JobEndpoints for GitlabClient {
@@ -253,6 +398,24 @@ impl JobEndpoints for GitlabClient {
             "api/v4/projects/{project_id}/jobs/{job_id}/artifacts/{}",
             artifact_path.percent_encode()
         ))
+    }
+
+    fn play_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error> {
+        self.post_no_body(&format!("api/v4/projects/{project_id}/jobs/{job_id}/play"))
+    }
+
+    fn retry_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error> {
+        self.post_no_body(&format!("api/v4/projects/{project_id}/jobs/{job_id}/retry"))
+    }
+
+    fn cancel_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error> {
+        self.post_no_body(&format!(
+            "api/v4/projects/{project_id}/jobs/{job_id}/cancel"
+        ))
+    }
+
+    fn erase_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error> {
+        self.post_no_body(&format!("api/v4/projects/{project_id}/jobs/{job_id}/erase"))
     }
 }
 
