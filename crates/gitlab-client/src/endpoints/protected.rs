@@ -1,9 +1,10 @@
-//! Governance read endpoints: the **Protected branches**, **Protected
-//! tags**, and **Protected environments** API categories.
+//! Governance endpoints: the **Protected branches**, **Protected tags**,
+//! and **Protected environments** API categories.
 //!
-//! All read-only (GET). Protect/unprotect (write) are intentionally omitted.
+//! Reads list/fetch protection rules; writes protect a branch/tag at a
+//! chosen access level and unprotect them.
 
-use gitlab_model::{ProtectedBranch, ProtectedEnvironment, ProtectedTag};
+use gitlab_model::{AccessLevel, ProtectedBranch, ProtectedEnvironment, ProtectedTag};
 
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
@@ -56,6 +57,49 @@ pub trait ProtectedEndpoints {
         project_id: i64,
         name: &str,
     ) -> Result<ProtectedEnvironment, Error>;
+
+    // --- Writes ---
+
+    /// Protect a branch (or wildcard, e.g. `release/*`) with the given push
+    /// and merge access levels. Returns the protection rule.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn protect_branch(
+        &self,
+        project_id: i64,
+        name: &str,
+        push_access_level: AccessLevel,
+        merge_access_level: AccessLevel,
+    ) -> Result<ProtectedBranch, Error>;
+
+    /// Unprotect a branch by name.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn unprotect_branch(&self, project_id: i64, name: &str) -> Result<(), Error>;
+
+    /// Protect a tag (or wildcard) with the given create access level.
+    /// Returns the protection rule.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn protect_tag(
+        &self,
+        project_id: i64,
+        name: &str,
+        create_access_level: AccessLevel,
+    ) -> Result<ProtectedTag, Error>;
+
+    /// Unprotect a tag by name.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn unprotect_tag(&self, project_id: i64, name: &str) -> Result<(), Error>;
 }
 
 impl ProtectedEndpoints for GitlabClient {
@@ -94,6 +138,49 @@ impl ProtectedEndpoints for GitlabClient {
     ) -> Result<ProtectedEnvironment, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/protected_environments/{}",
+            name.percent_encode()
+        ))
+    }
+
+    fn protect_branch(
+        &self,
+        project_id: i64,
+        name: &str,
+        push_access_level: AccessLevel,
+        merge_access_level: AccessLevel,
+    ) -> Result<ProtectedBranch, Error> {
+        // The protect endpoint takes its parameters in the query string.
+        self.post_no_body(&format!(
+            "api/v4/projects/{project_id}/protected_branches?name={}&push_access_level={}&merge_access_level={}",
+            name.percent_encode(),
+            push_access_level.as_raw(),
+            merge_access_level.as_raw(),
+        ))
+    }
+
+    fn unprotect_branch(&self, project_id: i64, name: &str) -> Result<(), Error> {
+        self.delete(&format!(
+            "api/v4/projects/{project_id}/protected_branches/{}",
+            name.percent_encode()
+        ))
+    }
+
+    fn protect_tag(
+        &self,
+        project_id: i64,
+        name: &str,
+        create_access_level: AccessLevel,
+    ) -> Result<ProtectedTag, Error> {
+        self.post_no_body(&format!(
+            "api/v4/projects/{project_id}/protected_tags?name={}&create_access_level={}",
+            name.percent_encode(),
+            create_access_level.as_raw(),
+        ))
+    }
+
+    fn unprotect_tag(&self, project_id: i64, name: &str) -> Result<(), Error> {
+        self.delete(&format!(
+            "api/v4/projects/{project_id}/protected_tags/{}",
             name.percent_encode()
         ))
     }

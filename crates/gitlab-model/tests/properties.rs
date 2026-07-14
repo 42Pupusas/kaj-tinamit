@@ -179,6 +179,7 @@ round_trip!(gitlab_note, GitlabNote);
 round_trip!(deploy_key_project, DeployKeyProject);
 round_trip!(deploy_key, DeployKey);
 round_trip!(deploy_token, DeployToken);
+round_trip!(created_deploy_token, CreatedDeployToken);
 
 // ci
 round_trip!(ci_status, CiStatus);

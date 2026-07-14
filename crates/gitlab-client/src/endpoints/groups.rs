@@ -1,14 +1,35 @@
-//! Group and membership read endpoints: the **Groups** and **Members** API
+//! Group and membership endpoints: the **Groups** and **Members** API
 //! categories (group and project members, including inherited).
 //!
-//! All read-only (GET). Write operations (add/update/remove member, create
-//! group) are intentionally omitted.
+//! Group reads list/fetch groups and their projects; member reads list
+//! direct/inherited members. Writes add, update, and remove members on
+//! both groups and projects.
 
-use gitlab_model::{GitlabGroup, GitlabProject, Member};
+use gitlab_model::{AccessLevel, GitlabGroup, GitlabProject, Member};
+use json_bourne::ToJson;
 
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
+
+/// Body for adding a member (`POST .../members`).
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+struct AddMemberBody {
+    user_id: i64,
+    access_level: i32,
+    #[bourne(skip_if_none)]
+    expires_at: Option<String>,
+}
+
+/// Body for updating a member's access (`PUT .../members/:id`).
+#[derive(Debug, Clone, ToJson)]
+#[bourne(deny_unknown_fields = false)]
+struct UpdateMemberBody {
+    access_level: i32,
+    #[bourne(skip_if_none)]
+    expires_at: Option<String>,
+}
 
 /// Read endpoints for groups.
 pub trait GroupEndpoints {
@@ -153,6 +174,74 @@ pub trait MemberEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn project_member_all(&self, project_id: i64, user_id: i64) -> Result<Member, Error>;
+
+    // --- Writes ---
+
+    /// Add a user to a group at `access_level`. Returns the new member.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn add_group_member(
+        &self,
+        group_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error>;
+
+    /// Update a group member's `access_level`. Returns the member.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn update_group_member(
+        &self,
+        group_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error>;
+
+    /// Remove a member from a group.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn remove_group_member(&self, group_id: i64, user_id: i64) -> Result<(), Error>;
+
+    /// Add a user to a project at `access_level`. Returns the new member.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn add_project_member(
+        &self,
+        project_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error>;
+
+    /// Update a project member's `access_level`. Returns the member.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn update_project_member(
+        &self,
+        project_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error>;
+
+    /// Remove a member from a project.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn remove_project_member(&self, project_id: i64, user_id: i64) -> Result<(), Error>;
 }
 
 impl MemberEndpoints for GitlabClient {
@@ -188,5 +277,79 @@ impl MemberEndpoints for GitlabClient {
         self.get(&format!(
             "api/v4/projects/{project_id}/members/all/{user_id}"
         ))
+    }
+
+    fn add_group_member(
+        &self,
+        group_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error> {
+        self.post(
+            &format!("api/v4/groups/{group_id}/members"),
+            &AddMemberBody {
+                user_id,
+                access_level: access_level.as_raw(),
+                expires_at: expires_at.map(str::to_string),
+            },
+        )
+    }
+
+    fn update_group_member(
+        &self,
+        group_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error> {
+        self.put(
+            &format!("api/v4/groups/{group_id}/members/{user_id}"),
+            &UpdateMemberBody {
+                access_level: access_level.as_raw(),
+                expires_at: expires_at.map(str::to_string),
+            },
+        )
+    }
+
+    fn remove_group_member(&self, group_id: i64, user_id: i64) -> Result<(), Error> {
+        self.delete(&format!("api/v4/groups/{group_id}/members/{user_id}"))
+    }
+
+    fn add_project_member(
+        &self,
+        project_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error> {
+        self.post(
+            &format!("api/v4/projects/{project_id}/members"),
+            &AddMemberBody {
+                user_id,
+                access_level: access_level.as_raw(),
+                expires_at: expires_at.map(str::to_string),
+            },
+        )
+    }
+
+    fn update_project_member(
+        &self,
+        project_id: i64,
+        user_id: i64,
+        access_level: AccessLevel,
+        expires_at: Option<&str>,
+    ) -> Result<Member, Error> {
+        self.put(
+            &format!("api/v4/projects/{project_id}/members/{user_id}"),
+            &UpdateMemberBody {
+                access_level: access_level.as_raw(),
+                expires_at: expires_at.map(str::to_string),
+            },
+        )
+    }
+
+    fn remove_project_member(&self, project_id: i64, user_id: i64) -> Result<(), Error> {
+        self.delete(&format!("api/v4/projects/{project_id}/members/{user_id}"))
     }
 }

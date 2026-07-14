@@ -29,17 +29,19 @@ mod pagination;
 pub use client::GitlabClient;
 pub use endpoints::{
     AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CommitAction, CommitEndpoints,
-    CommitFile, CreateCommit, CreateEpic, CreateIssue, CreateLabel, CreateMergeRequest,
-    CreateMilestone, CreateRelease, CreateSnippet, CreateWikiPage, DeployKeyEndpoints,
-    DeployTokenEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints, EventEndpoints,
-    GroupEndpoints, IssueEndpoints, IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter,
-    IterationEndpoints, JobEndpoints, LabelEndpoints, LinkType, MemberEndpoints,
-    MergeRequestEndpoints, MergeRequestQuery, MetadataEndpoints, MilestoneEndpoints, NoteEndpoints,
-    PipelineEndpoints, PipelineInput, PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints,
-    ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints,
-    ResourceEventEndpoints, RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints,
-    SnippetFileInput, TodoEndpoints, UpdateEpic, UpdateIssue, UpdateLabel, UpdateMergeRequest,
-    UpdateMilestone, UpdateRelease, UpdateSnippet, UpdateWikiPage, UserEndpoints, WikiEndpoints,
+    CommitFile, CreateCommit, CreateDeployKey, CreateDeployToken, CreateEpic, CreateIssue,
+    CreateLabel, CreateMergeRequest, CreateMilestone, CreatePipelineSchedule, CreateRelease,
+    CreateSnippet, CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
+    EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
+    IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
+    LabelEndpoints, LinkType, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery,
+    MetadataEndpoints, MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineInput,
+    PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
+    ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints,
+    RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints, SnippetFileInput,
+    TodoEndpoints, UpdateEpic, UpdateIssue, UpdateLabel, UpdateMergeRequest, UpdateMilestone,
+    UpdatePipelineSchedule, UpdateRelease, UpdateSnippet, UpdateWikiPage, UserEndpoints,
+    WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -60,3 +62,7 @@ pub mod prelude {
 
 // Re-export the wire shapes so callers need only depend on gitlab-client.
 pub use gitlab_model as model;
+
+// AccessLevel is an input to several write endpoints (members, protections),
+// so surface it at the crate root for convenience.
+pub use gitlab_model::AccessLevel;

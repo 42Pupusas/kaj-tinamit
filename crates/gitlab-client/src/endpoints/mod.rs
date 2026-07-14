@@ -37,7 +37,7 @@ pub use award_emoji::AwardEmojiEndpoints;
 pub use boards::BoardEndpoints;
 pub use ci::{JobEndpoints, PipelineEndpoints, PipelineInput, PipelineQuery};
 pub use commits::{CommitAction, CommitEndpoints, CreateCommit};
-pub use deploy::{DeployKeyEndpoints, DeployTokenEndpoints};
+pub use deploy::{CreateDeployKey, CreateDeployToken, DeployKeyEndpoints, DeployTokenEndpoints};
 pub use deployments::{DeploymentEndpoints, EnvironmentEndpoints};
 pub use epics::{CreateEpic, EpicEndpoints, UpdateEpic};
 pub use events::EventEndpoints;
@@ -55,7 +55,9 @@ pub use merge_requests::{
 pub use metadata::MetadataEndpoints;
 pub use milestones::{CreateMilestone, MilestoneEndpoints, UpdateMilestone};
 pub use notes::NoteEndpoints;
-pub use pipeline_schedules::PipelineScheduleEndpoints;
+pub use pipeline_schedules::{
+    CreatePipelineSchedule, PipelineScheduleEndpoints, UpdatePipelineSchedule,
+};
 pub use projects::ProjectEndpoints;
 pub use protected::ProtectedEndpoints;
 pub use releases::{CreateRelease, ReleaseEndpoints, UpdateRelease};

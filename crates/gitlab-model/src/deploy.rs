@@ -59,6 +59,29 @@ pub struct DeployToken {
     pub scopes: Vec<String>,
 }
 
+/// A deploy token as returned by **creation**
+/// (`POST /projects|groups/:id/deploy_tokens`).
+///
+/// Unlike [`DeployToken`], this carries the secret `token` value, which
+/// GitLab returns exactly once at creation time and never again.
+#[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[bourne(deny_unknown_fields = false)]
+pub struct CreatedDeployToken {
+    pub id: i64,
+    pub name: Option<String>,
+    pub username: Option<String>,
+    pub expires_at: Option<String>,
+    #[bourne(default)]
+    pub revoked: bool,
+    #[bourne(default)]
+    pub expired: bool,
+    #[bourne(default)]
+    pub scopes: Vec<String>,
+    /// The secret token value — present only on creation.
+    pub token: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
