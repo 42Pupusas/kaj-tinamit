@@ -81,6 +81,26 @@ impl GitlabClient {
         Ok(parse_str(&response.body)?)
     }
 
+    /// Perform a GET request and return the raw response body as text.
+    ///
+    /// For endpoints that don't return JSON — raw blobs, raw files, plain
+    /// changelog text. Binary payloads (archives) are lossily decoded as
+    /// UTF-8 by the transport and are not supported here.
+    pub(crate) fn get_raw(&self, path: &str) -> Result<String, Error> {
+        let url = format!("{}/{}", self.base_url, path);
+        let response = gitlab_http::get(&url)
+            .header("Authorization", self.auth())
+            .send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method: HttpMethod::Get,
+                status: response.status,
+            });
+        }
+        Ok(response.body)
+    }
+
     /// Perform a POST request with a JSON body and parse the JSON response.
     // Scaffolding for write endpoints (create issue, comment, …) — not yet
     // exercised by a public method.

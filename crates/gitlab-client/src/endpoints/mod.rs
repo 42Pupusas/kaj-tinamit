@@ -9,6 +9,7 @@ mod issues;
 mod merge_requests;
 mod milestones;
 mod projects;
+mod repository;
 mod users;
 mod wikis;
 
@@ -18,5 +19,6 @@ pub use issues::{IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter};
 pub use merge_requests::{MergeRequestEndpoints, MergeRequestQuery};
 pub use milestones::MilestoneEndpoints;
 pub use projects::ProjectEndpoints;
+pub use repository::RepositoryEndpoints;
 pub use users::UserEndpoints;
 pub use wikis::WikiEndpoints;

@@ -13,6 +13,7 @@ pub mod event;
 pub mod issue;
 pub mod merge_request;
 pub mod project;
+pub mod repository;
 pub mod user;
 pub mod wiki;
 
@@ -21,6 +22,7 @@ pub use event::*;
 pub use issue::*;
 pub use merge_request::*;
 pub use project::*;
+pub use repository::*;
 pub use user::*;
 pub use wiki::*;
 

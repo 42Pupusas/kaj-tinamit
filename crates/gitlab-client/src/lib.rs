@@ -29,8 +29,8 @@ mod pagination;
 pub use client::GitlabClient;
 pub use endpoints::{
     CommitEndpoints, EventEndpoints, IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter,
-    MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints, ProjectEndpoints, UserEndpoints,
-    WikiEndpoints,
+    MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints, ProjectEndpoints,
+    RepositoryEndpoints, UserEndpoints, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -39,7 +39,7 @@ pub use pagination::PaginationConfig;
 pub mod prelude {
     pub use crate::endpoints::{
         CommitEndpoints, EventEndpoints, IssueEndpoints, MergeRequestEndpoints, MilestoneEndpoints,
-        ProjectEndpoints, UserEndpoints, WikiEndpoints,
+        ProjectEndpoints, RepositoryEndpoints, UserEndpoints, WikiEndpoints,
     };
 }
 

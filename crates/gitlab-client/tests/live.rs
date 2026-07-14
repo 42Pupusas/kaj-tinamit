@@ -86,6 +86,77 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Repository category (tree, branches, tags, file, blame,
+/// contributors) against the first project that has a populated repository.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn repository_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects request failed");
+
+    // Find a project whose default branch actually has a tree.
+    let mut chosen = None;
+    for p in &projects {
+        let pid = i64::from(p.id);
+        if let Ok(tree) = client.repository_tree(pid, None, None, false)
+            && !tree.is_empty()
+        {
+            chosen = Some((pid, p, tree));
+            break;
+        }
+    }
+    let (pid, project, tree) = chosen.expect("need one project with a repository");
+    eprintln!(
+        "repository of #{} {}",
+        pid,
+        project.path_with_namespace.as_deref().unwrap_or("?")
+    );
+    eprintln!("  tree entries (root): {}", tree.len());
+    for e in tree.iter().take(5) {
+        eprintln!("    [{:?}] {}", e.entry_type, e.path);
+    }
+
+    let branches = client.branches(pid).expect("branches request failed");
+    eprintln!("  branches: {}", branches.len());
+    let default_branch = branches
+        .iter()
+        .find(|b| b.default)
+        .or_else(|| branches.first())
+        .expect("repository has at least one branch");
+    eprintln!("  default branch: {}", default_branch.name);
+
+    // Round-trip a single branch fetch.
+    let one = client
+        .branch(pid, &default_branch.name)
+        .expect("branch request failed");
+    assert_eq!(one.name, default_branch.name);
+
+    let tags = client.tags(pid).expect("tags request failed");
+    eprintln!("  tags: {}", tags.len());
+
+    let contributors = client.contributors(pid).expect("contributors request failed");
+    eprintln!("  contributors: {}", contributors.len());
+
+    // Fetch the first blob-type entry as a file (metadata + raw).
+    if let Some(blob) = tree.iter().find(|e| {
+        matches!(e.entry_type, gitlab_client::model::TreeEntryType::Blob)
+    }) {
+        let file = client
+            .file(pid, &blob.path, &default_branch.name)
+            .expect("file request failed");
+        eprintln!("  file {}: {} bytes", file.file_path, file.size);
+        let raw = client
+            .file_raw(pid, &blob.path, &default_branch.name)
+            .expect("file_raw request failed");
+        eprintln!("  file_raw {}: {} chars", blob.path, raw.len());
+
+        let blame = client
+            .file_blame(pid, &blob.path, &default_branch.name)
+            .expect("file_blame request failed");
+        eprintln!("  blame ranges: {}", blame.len());
+    }
+}
+
 #[test]
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn issues_smoke() {
