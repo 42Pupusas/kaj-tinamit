@@ -86,6 +86,46 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Notes category: find an issue with notes and round-trip
+/// the list + a single note.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn notes_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let query = IssueQuery::new()
+        .with_scope(IssueScope::All)
+        .with_state(IssueStateFilter::All);
+    let issues = client.issues(&query).expect("issues request failed");
+
+    let mut found = false;
+    for issue in issues.iter().take(50) {
+        let Some(pid) = issue.project_id else { continue };
+        let notes = client
+            .issue_notes(i64::from(pid), i64::from(issue.iid))
+            .expect("issue_notes failed");
+        if let Some(first) = notes.first() {
+            eprintln!(
+                "issue {}!{} has {} notes; first #{} system={} type={:?}",
+                pid,
+                issue.iid,
+                notes.len(),
+                first.id,
+                first.system,
+                first.noteable_type
+            );
+            let one = client
+                .issue_note(i64::from(pid), i64::from(issue.iid), first.id)
+                .expect("issue_note failed");
+            assert_eq!(one.id, first.id);
+            found = true;
+            break;
+        }
+    }
+    if !found {
+        eprintln!("no issue notes found in first 50 issues");
+    }
+}
+
 /// Exercises the Runners category: list accessible runners, then round-trip
 /// runner detail + managers for the first one; also project runners.
 #[test]
@@ -110,9 +150,14 @@ fn runners_smoke() {
         assert_eq!(detail.id, first.id);
         eprintln!(
             "  runner {} type {:?}, {} projects, tags {:?}",
-            detail.id, detail.runner_type, detail.projects.len(), detail.tag_list
+            detail.id,
+            detail.runner_type,
+            detail.projects.len(),
+            detail.tag_list
         );
-        let managers = client.runner_managers(first.id).expect("runner_managers failed");
+        let managers = client
+            .runner_managers(first.id)
+            .expect("runner_managers failed");
         eprintln!("  managers: {}", managers.len());
     }
 
@@ -148,7 +193,9 @@ fn environments_and_deployments_smoke() {
                 envs.len(),
                 first.name
             );
-            let one = client.environment(pid, first.id).expect("environment failed");
+            let one = client
+                .environment(pid, first.id)
+                .expect("environment failed");
             assert_eq!(one.id, first.id);
             env_hit = true;
         }
@@ -157,7 +204,12 @@ fn environments_and_deployments_smoke() {
             && let Ok(deps) = client.deployments(pid)
             && let Some(first) = deps.first()
         {
-            eprintln!("deployments in #{}: {} (first id {})", pid, deps.len(), first.id);
+            eprintln!(
+                "deployments in #{}: {} (first id {})",
+                pid,
+                deps.len(),
+                first.id
+            );
             let one = client.deployment(pid, first.id).expect("deployment failed");
             assert_eq!(one.id, first.id);
             dep_hit = true;

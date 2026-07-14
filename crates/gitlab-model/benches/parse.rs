@@ -6,9 +6,11 @@
 
 use gitlab_model::{
     Blob, Branch, CommitWithDiffs, Contributor, Deployment, Discussion, Environment, GitlabCommit,
-    GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member,
-    MergeRequest, MergeRequestChanges, Milestone, PipelineDetail, PipelineSummary, PipelineVariable,
-    Release, RepositoryFile, Runner, RunnerDetail, Snippet, Tag, TreeEntry, WikiPage, WikiPageList,
+    GitlabEvent, GitlabGroup, GitlabIssue, GitlabNote, GitlabProject, GitlabUser, Job, Label,
+    Member,
+    MergeRequest, MergeRequestChanges, Milestone, PipelineDetail, PipelineSummary,
+    PipelineVariable, Release, RepositoryFile, Runner, RunnerDetail, Snippet, Tag, TreeEntry,
+    WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -329,6 +331,16 @@ bench_parse!(
     "contacted_at":"2016-01-25T16:39:48Z","access_level":"ref_protected","maximum_timeout":3600,
     "tag_list":["ruby","mysql"],
     "projects":[{"id":1,"name":"CE","path":"gitlab-foss","path_with_namespace":"gitlab-org/gitlab-foss"}]}"#
+);
+
+bench_parse!(
+    note,
+    GitlabNote,
+    r#"{"id":302,"body":"Text of the comment",
+    "author":{"id":1,"username":"pipin","email":"admin@example.com","name":"Pip","state":"active"},
+    "created_at":"2013-10-02T09:22:45Z","updated_at":"2013-10-02T10:22:45Z","system":false,
+    "noteable_id":377,"noteable_type":"Issue","project_id":5,"noteable_iid":377,
+    "resolvable":false,"confidential":false,"internal":false}"#
 );
 
 // ---------------------------------------------------------------------------

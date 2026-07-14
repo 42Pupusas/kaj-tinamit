@@ -30,7 +30,7 @@ pub use client::GitlabClient;
 pub use endpoints::{
     CommitEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EventEndpoints, GroupEndpoints,
     IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, JobEndpoints, LabelEndpoints,
-    MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints,
+    MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints, NoteEndpoints,
     PipelineEndpoints, PipelineQuery, ProjectEndpoints, ProjectSnippetEndpoints, ReleaseEndpoints,
     RepositoryEndpoints, RunnerEndpoints, RunnerQuery, SnippetEndpoints, UserEndpoints,
     WikiEndpoints,
@@ -43,9 +43,9 @@ pub mod prelude {
     pub use crate::endpoints::{
         CommitEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EventEndpoints, GroupEndpoints,
         IssueEndpoints, JobEndpoints, LabelEndpoints, MemberEndpoints, MergeRequestEndpoints,
-        MilestoneEndpoints, PipelineEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
-        ReleaseEndpoints, RepositoryEndpoints, RunnerEndpoints, SnippetEndpoints, UserEndpoints,
-        WikiEndpoints,
+        MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, ProjectEndpoints,
+        ProjectSnippetEndpoints, ReleaseEndpoints, RepositoryEndpoints, RunnerEndpoints,
+        SnippetEndpoints, UserEndpoints, WikiEndpoints,
     };
 }
 

@@ -1,7 +1,7 @@
 //! Merge-request read endpoints and the [`MergeRequestQuery`] builder.
 
 use gitlab_model::{
-    Discussion, MergeRequest, MergeRequestApprovals, MergeRequestChanges, MergeRequestState, Note,
+    Discussion, MergeRequest, MergeRequestApprovals, MergeRequestChanges, MergeRequestState,
     Pipeline, TimeStats,
 };
 
@@ -71,13 +71,6 @@ pub trait MergeRequestEndpoints {
         mr_iid: i64,
     ) -> Result<MergeRequestApprovals, Error>;
 
-    /// Get notes (comments) on an issue.
-    ///
-    /// # Errors
-    ///
-    /// Propagates transport, API-status, and JSON errors.
-    fn issue_notes(&self, project_id: i64, issue_iid: i64) -> Result<Vec<Note>, Error>;
-
     /// Get time-tracking statistics for an issue.
     ///
     /// # Errors
@@ -144,12 +137,6 @@ impl MergeRequestEndpoints for GitlabClient {
     ) -> Result<MergeRequestApprovals, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/merge_requests/{mr_iid}/approvals"
-        ))
-    }
-
-    fn issue_notes(&self, project_id: i64, issue_iid: i64) -> Result<Vec<Note>, Error> {
-        self.get_paginated(&format!(
-            "api/v4/projects/{project_id}/issues/{issue_iid}/notes"
         ))
     }
 

@@ -24,16 +24,29 @@ use proptest::prelude::*;
 /// Generate a value, serialize it, parse it back, and assert the
 /// re-serialized form is byte-identical. Works for any model that is
 /// `Arbitrary + ToJson + FromJson`.
+///
+/// The body runs on a worker thread with a large (32 MiB) stack:
+/// proptest-derive builds a deeply nested tuple strategy for our biggest
+/// composite models (e.g. `Environment`, which embeds the whole
+/// `Deployable` tree), and generating those value trees can exceed the
+/// 2 MiB default test-thread stack.
 macro_rules! round_trip {
     ($name:ident, $ty:ty) => {
-        proptest! {
-            #[test]
-            fn $name(x in any::<$ty>()) {
-                let once = to_string(&x).expect("serialize");
-                let back: $ty = parse_str(&once).expect("parse");
-                let twice = to_string(&back).expect("re-serialize");
-                prop_assert_eq!(once, twice);
-            }
+        #[test]
+        fn $name() {
+            std::thread::Builder::new()
+                .stack_size(32 * 1024 * 1024)
+                .spawn(|| {
+                    proptest!(|(x in any::<$ty>())| {
+                        let once = to_string(&x).expect("serialize");
+                        let back: $ty = parse_str(&once).expect("parse");
+                        let twice = to_string(&back).expect("re-serialize");
+                        prop_assert_eq!(once, twice);
+                    });
+                })
+                .expect("spawn property-test thread")
+                .join()
+                .expect("property-test thread panicked");
         }
     };
 }
@@ -151,6 +164,10 @@ round_trip!(runner, Runner);
 round_trip!(runner_project, RunnerProject);
 round_trip!(runner_detail, RunnerDetail);
 round_trip!(runner_manager, RunnerManager);
+
+// note
+round_trip!(note_author, NoteAuthor);
+round_trip!(gitlab_note, GitlabNote);
 
 // ci
 round_trip!(ci_status, CiStatus);
