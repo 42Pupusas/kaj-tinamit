@@ -86,6 +86,63 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the CI category: walks projects to find one with pipelines,
+/// then fetches the pipeline detail, its jobs, variables, and a job trace.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn ci_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects request failed");
+
+    let mut found = None;
+    for p in &projects {
+        let pid = i64::from(p.id);
+        if let Ok(pipes) = client.pipelines(pid, &gitlab_client::PipelineQuery::new())
+            && let Some(first) = pipes.first()
+        {
+            found = Some((pid, p, first.id));
+            break;
+        }
+    }
+    let Some((pid, project, pipeline_id)) = found else {
+        eprintln!("no pipelines found in any project - skipping CI detail checks");
+        return;
+    };
+    eprintln!(
+        "pipelines in #{} {}: first id {}",
+        pid,
+        project.path_with_namespace.as_deref().unwrap_or("?"),
+        pipeline_id
+    );
+
+    let detail = client.pipeline(pid, pipeline_id).expect("pipeline failed");
+    eprintln!("  pipeline {} status {:?}", detail.id, detail.status);
+
+    let jobs = client.pipeline_jobs(pid, pipeline_id).expect("pipeline_jobs failed");
+    eprintln!("  jobs: {}", jobs.len());
+    for j in jobs.iter().take(5) {
+        eprintln!(
+            "    {} [{:?}] stage={}",
+            j.name.as_deref().unwrap_or("?"),
+            j.status,
+            j.stage.as_deref().unwrap_or("?")
+        );
+    }
+
+    let vars = client
+        .pipeline_variables(pid, pipeline_id)
+        .expect("pipeline_variables failed");
+    eprintln!("  pipeline variables: {}", vars.len());
+
+    // Job trace for the first job (may be empty/expired but must not error).
+    if let Some(job) = jobs.first() {
+        let one = client.job(pid, job.id).expect("job failed");
+        assert_eq!(one.id, job.id);
+        let trace = client.job_trace(pid, job.id).expect("job_trace failed");
+        eprintln!("  job {} trace: {} chars", job.id, trace.len());
+    }
+}
+
 /// Exercises the Labels category: group labels (via the first group) and
 /// project labels (via the first project), plus a single-label round-trip.
 #[test]

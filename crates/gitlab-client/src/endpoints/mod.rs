@@ -3,6 +3,7 @@
 //!
 //! All endpoints here are **read-only** (GET) — no create/update/delete.
 
+mod ci;
 mod commits;
 mod events;
 mod groups;
@@ -15,6 +16,7 @@ mod repository;
 mod users;
 mod wikis;
 
+pub use ci::{JobEndpoints, PipelineEndpoints, PipelineQuery};
 pub use commits::CommitEndpoints;
 pub use events::EventEndpoints;
 pub use groups::{GroupEndpoints, MemberEndpoints};

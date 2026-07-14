@@ -8,6 +8,7 @@
 //! `deny_unknown_fields = false` so GitLab adding a field never breaks
 //! parsing.
 
+pub mod ci;
 pub mod commit;
 pub mod event;
 pub mod group;
@@ -19,6 +20,7 @@ pub mod repository;
 pub mod user;
 pub mod wiki;
 
+pub use ci::*;
 pub use commit::*;
 pub use event::*;
 pub use group::*;
