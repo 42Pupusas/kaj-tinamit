@@ -162,9 +162,14 @@ pub struct FileChange {
 }
 
 /// Pipeline status.
+///
+/// `snake_case`, not `lowercase`: GitLab reports `waiting_for_resource` with
+/// underscores, so lowercasing alone would mangle it to `waitingforresource`
+/// and fail to parse. All other variants are single words where the two
+/// castings coincide.
 #[derive(Debug, Clone, PartialEq, Eq, FromJson, ToJson)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "lowercase")]
+#[bourne(rename_all = "snake_case")]
 pub enum PipelineStatus {
     Created,
     WaitingForResource,
@@ -263,4 +268,75 @@ pub struct Note {
     pub system: bool,
     pub noteable_type: NoteableType,
     pub noteable_id: i64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use json_bourne::to_string;
+
+    /// `as_ref` must yield exactly the wire token — i.e. the JSON string
+    /// `ToJson` emits, minus its surrounding quotes. This pins every arm and
+    /// guards against the `AsRef` impl drifting from the `#[bourne(rename_all)]`
+    /// casing (they're maintained by hand, independently of the derive).
+    fn assert_matches_wire<T: AsRef<str> + ToJson>(value: &T) {
+        let json = to_string(value).expect("serialize");
+        let unquoted = json.trim_matches('"');
+        assert_eq!(value.as_ref(), unquoted);
+    }
+
+    #[test]
+    fn merge_request_state_as_ref() {
+        for s in [
+            MergeRequestState::Opened,
+            MergeRequestState::Closed,
+            MergeRequestState::Locked,
+            MergeRequestState::Merged,
+        ] {
+            assert_matches_wire(&s);
+        }
+    }
+
+    #[test]
+    fn merge_status_as_ref() {
+        for s in [
+            MergeStatus::CanBeMerged,
+            MergeStatus::CannotBeMerged,
+            MergeStatus::Unchecked,
+            MergeStatus::CannotBeMergedRecheck,
+        ] {
+            assert_matches_wire(&s);
+        }
+    }
+
+    #[test]
+    fn pipeline_status_as_ref() {
+        for s in [
+            PipelineStatus::Created,
+            PipelineStatus::WaitingForResource,
+            PipelineStatus::Preparing,
+            PipelineStatus::Pending,
+            PipelineStatus::Running,
+            PipelineStatus::Success,
+            PipelineStatus::Failed,
+            PipelineStatus::Canceled,
+            PipelineStatus::Skipped,
+            PipelineStatus::Manual,
+            PipelineStatus::Scheduled,
+        ] {
+            assert_matches_wire(&s);
+        }
+    }
+
+    #[test]
+    fn noteable_type_as_ref() {
+        for t in [
+            NoteableType::Issue,
+            NoteableType::MergeRequest,
+            NoteableType::Snippet,
+            NoteableType::Commit,
+        ] {
+            assert_matches_wire(&t);
+        }
+    }
 }
