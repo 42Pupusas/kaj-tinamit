@@ -86,6 +86,42 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Labels category: group labels (via the first group) and
+/// project labels (via the first project), plus a single-label round-trip.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn labels_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+
+    if let Some(group) = client.groups().expect("groups failed").first() {
+        let labels = client
+            .group_labels(group.id, true)
+            .expect("group_labels failed");
+        eprintln!("group #{} labels: {}", group.id, labels.len());
+        for l in labels.iter().take(5) {
+            eprintln!("  {} {} (open issues {})", l.color, l.name, l.open_issues_count);
+        }
+        if let Some(first) = labels.first() {
+            let one = client
+                .group_label(group.id, &first.name)
+                .expect("group_label failed");
+            assert_eq!(one.name, first.name);
+        }
+    }
+
+    let projects = client.projects().expect("projects failed");
+    if let Some(project) = projects.first() {
+        let pid = i64::from(project.id);
+        let labels = client
+            .project_labels(pid, true)
+            .expect("project_labels failed");
+        eprintln!("project #{pid} labels: {}", labels.len());
+        for l in labels.iter().take(5) {
+            eprintln!("  {} {}", l.color, l.name);
+        }
+    }
+}
+
 /// Exercises the Groups + Members categories: list groups, fetch one, its
 /// members (direct + inherited), subgroups, and group projects.
 #[test]
