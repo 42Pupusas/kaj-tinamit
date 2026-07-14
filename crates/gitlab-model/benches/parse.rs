@@ -7,8 +7,8 @@
 use gitlab_model::{
     Blob, Branch, CommitWithDiffs, Contributor, Discussion, GitlabCommit, GitlabEvent, GitlabGroup,
     GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member, MergeRequest, MergeRequestChanges,
-    Milestone, PipelineDetail, PipelineSummary, PipelineVariable, RepositoryFile, Tag, TreeEntry,
-    WikiPage, WikiPageList,
+    Milestone, PipelineDetail, PipelineSummary, PipelineVariable, Release, RepositoryFile, Tag,
+    TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -267,6 +267,19 @@ bench_parse!(
     "committer_name":"Alice","committer_email":"alice@example.com","committed_date":"2022-01-01T00:00:00Z",
     "parent_ids":["a1b2c3"],"web_url":"https://example.com/-/commit/0ff3ae19",
     "stats":{"additions":10,"deletions":2,"total":12}}"#
+);
+
+bench_parse!(
+    release,
+    Release,
+    r###"{"tag_name":"v0.2","name":"Awesome app v0.2","description":"## CHANGELOG\r\n- stuff",
+    "created_at":"2019-01-03T01:56:19Z","released_at":"2019-01-03T01:56:19Z",
+    "author":{"id":1,"name":"Admin","username":"root","state":"active"},
+    "commit":{"id":"079e9010","short_id":"079e9010","title":"Update README"},
+    "milestones":[{"id":51,"iid":1,"project_id":24,"title":"v1.0-rc","state":"closed",
+    "issue_stats":{"total":98,"closed":76}}],
+    "assets":{"count":6,"sources":[{"format":"zip","url":"https://example.com/x.zip"}],
+    "links":[{"id":2,"name":"asset.msi","url":"https://example.com/msi","link_type":"other"}]}}"###
 );
 
 // ---------------------------------------------------------------------------

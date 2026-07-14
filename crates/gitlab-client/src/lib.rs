@@ -31,7 +31,7 @@ pub use endpoints::{
     CommitEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints, IssueQuery, IssueScope,
     IssueStateFilter, JobEndpoints, LabelEndpoints, MemberEndpoints, MergeRequestEndpoints,
     MergeRequestQuery, MilestoneEndpoints, PipelineEndpoints, PipelineQuery, ProjectEndpoints,
-    RepositoryEndpoints, UserEndpoints, WikiEndpoints,
+    ReleaseEndpoints, RepositoryEndpoints, UserEndpoints, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -41,7 +41,8 @@ pub mod prelude {
     pub use crate::endpoints::{
         CommitEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints, JobEndpoints,
         LabelEndpoints, MemberEndpoints, MergeRequestEndpoints, MilestoneEndpoints,
-        PipelineEndpoints, ProjectEndpoints, RepositoryEndpoints, UserEndpoints, WikiEndpoints,
+        PipelineEndpoints, ProjectEndpoints, ReleaseEndpoints, RepositoryEndpoints, UserEndpoints,
+        WikiEndpoints,
     };
 }
 

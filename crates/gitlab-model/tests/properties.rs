@@ -119,6 +119,17 @@ round_trip!(member, Member);
 // label
 round_trip!(label, Label);
 
+// release
+round_trip!(release_author, ReleaseAuthor);
+round_trip!(release_commit, ReleaseCommit);
+round_trip!(milestone_issue_stats, MilestoneIssueStats);
+round_trip!(release_milestone, ReleaseMilestone);
+round_trip!(release_source, ReleaseSource);
+round_trip!(release_link, ReleaseLink);
+round_trip!(release_assets, ReleaseAssets);
+round_trip!(release_evidence, ReleaseEvidence);
+round_trip!(release, Release);
+
 // ci
 round_trip!(ci_status, CiStatus);
 round_trip!(ci_user, CiUser);

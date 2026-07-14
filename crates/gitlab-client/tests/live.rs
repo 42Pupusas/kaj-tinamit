@@ -86,6 +86,48 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Releases category: walk projects to find one with releases,
+/// then round-trip a single release by tag and the latest-release permalink.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn releases_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects request failed");
+
+    let mut found = None;
+    for p in &projects {
+        let pid = i64::from(p.id);
+        if let Ok(rels) = client.releases(pid)
+            && let Some(first) = rels.first()
+        {
+            found = Some((pid, p, first.tag_name.clone()));
+            break;
+        }
+    }
+    let Some((pid, project, tag)) = found else {
+        eprintln!("no releases found in any project - skipping release detail checks");
+        return;
+    };
+    eprintln!(
+        "releases in #{} {}: first tag {}",
+        pid,
+        project.path_with_namespace.as_deref().unwrap_or("?"),
+        tag
+    );
+
+    let one = client.release(pid, &tag).expect("release request failed");
+    assert_eq!(one.tag_name, tag);
+    eprintln!(
+        "  release {}: {} assets, {} milestones",
+        one.tag_name,
+        one.assets.count,
+        one.milestones.len()
+    );
+
+    let latest = client.latest_release(pid).expect("latest_release failed");
+    eprintln!("  latest release tag: {}", latest.tag_name);
+}
+
 /// Exercises the CI category: walks projects to find one with pipelines,
 /// then fetches the pipeline detail, its jobs, variables, and a job trace.
 #[test]
