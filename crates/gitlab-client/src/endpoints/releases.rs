@@ -31,6 +31,14 @@ pub trait ReleaseEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn latest_release(&self, project_id: i64) -> Result<Release, Error>;
+
+    /// List releases across all projects in a group (the **Group releases**
+    /// category).
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn group_releases(&self, group_id: i64) -> Result<Vec<Release>, Error>;
 }
 
 impl ReleaseEndpoints for GitlabClient {
@@ -49,5 +57,9 @@ impl ReleaseEndpoints for GitlabClient {
         self.get(&format!(
             "api/v4/projects/{project_id}/releases/permalink/latest"
         ))
+    }
+
+    fn group_releases(&self, group_id: i64) -> Result<Vec<Release>, Error> {
+        self.get_paginated(&format!("api/v4/groups/{group_id}/releases"))
     }
 }

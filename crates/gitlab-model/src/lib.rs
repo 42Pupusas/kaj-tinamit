@@ -8,9 +8,11 @@
 //! `deny_unknown_fields = false` so GitLab adding a field never breaks
 //! parsing.
 
+pub mod award_emoji;
 pub mod board;
 pub mod ci;
 pub mod commit;
+pub mod commit_status;
 pub mod deploy;
 pub mod deployment;
 pub mod epic;
@@ -22,8 +24,11 @@ pub mod issue_statistics;
 pub mod iteration;
 pub mod label;
 pub mod merge_request;
+pub mod metadata;
 pub mod note;
+pub mod pipeline_schedule;
 pub mod project;
+pub mod protected;
 pub mod release;
 pub mod repository;
 pub mod resource_event;
@@ -34,9 +39,11 @@ pub mod todo;
 pub mod user;
 pub mod wiki;
 
+pub use award_emoji::*;
 pub use board::*;
 pub use ci::*;
 pub use commit::*;
+pub use commit_status::*;
 pub use deploy::*;
 pub use deployment::*;
 pub use epic::*;
@@ -48,8 +55,11 @@ pub use issue_statistics::*;
 pub use iteration::*;
 pub use label::*;
 pub use merge_request::*;
+pub use metadata::*;
 pub use note::*;
+pub use pipeline_schedule::*;
 pub use project::*;
+pub use protected::*;
 pub use release::*;
 pub use repository::*;
 pub use resource_event::*;

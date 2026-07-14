@@ -21,6 +21,20 @@ pub trait WikiEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn wiki_page(&self, project_id: i32, slug: &str) -> Result<WikiPage, Error>;
+
+    /// List all wiki pages for a group (entries omit `content`).
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn group_wiki_pages(&self, group_id: i64) -> Result<Vec<WikiPageList>, Error>;
+
+    /// Get a single group wiki page (including `content`) by slug.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn group_wiki_page(&self, group_id: i64, slug: &str) -> Result<WikiPage, Error>;
 }
 
 impl WikiEndpoints for GitlabClient {
@@ -31,6 +45,17 @@ impl WikiEndpoints for GitlabClient {
     fn wiki_page(&self, project_id: i32, slug: &str) -> Result<WikiPage, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/wikis/{}",
+            slug.percent_encode()
+        ))
+    }
+
+    fn group_wiki_pages(&self, group_id: i64) -> Result<Vec<WikiPageList>, Error> {
+        self.get_paginated(&format!("api/v4/groups/{group_id}/wikis"))
+    }
+
+    fn group_wiki_page(&self, group_id: i64, slug: &str) -> Result<WikiPage, Error> {
+        self.get(&format!(
+            "api/v4/groups/{group_id}/wikis/{}",
             slug.percent_encode()
         ))
     }

@@ -823,3 +823,190 @@ fn issue_links_and_events_smoke() {
         eprintln!("no resource events found in first 50 issues");
     }
 }
+
+/// Exercises the Metadata endpoint + Namespaces listing.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn metadata_and_namespaces_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let meta = client.metadata().expect("metadata failed");
+    eprintln!(
+        "instance version {} (enterprise={}, kas={})",
+        meta.version.as_deref().unwrap_or("?"),
+        meta.enterprise,
+        meta.kas.enabled
+    );
+
+    let namespaces = client.namespaces().expect("namespaces failed");
+    eprintln!("visible namespaces: {}", namespaces.len());
+    for n in namespaces.iter().take(5) {
+        eprintln!(
+            "  #{} [{}] {}",
+            n.id,
+            n.kind.as_deref().unwrap_or("?"),
+            n.full_path.as_deref().unwrap_or("?")
+        );
+    }
+}
+
+/// Exercises Commit statuses + Job artifacts: find a project with a
+/// pipeline, read the head commit's statuses and a job's artifacts.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn commit_statuses_and_artifacts_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects failed");
+
+    for p in projects.iter().take(20) {
+        let pid = i64::from(p.id);
+        let Ok(commits) = client.commits(pid, None) else {
+            continue;
+        };
+        let Some(head) = commits.first() else { continue };
+        let statuses = client
+            .commit_statuses(pid, &head.id)
+            .expect("commit_statuses failed");
+        if !statuses.is_empty() {
+            eprintln!(
+                "project #{pid} commit {} statuses: {}",
+                &head.id[..8.min(head.id.len())],
+                statuses.len()
+            );
+            for s in statuses.iter().take(5) {
+                eprintln!(
+                    "  {} [{:?}] {}",
+                    s.name.as_deref().unwrap_or("?"),
+                    s.status,
+                    s.target_url.as_deref().unwrap_or("")
+                );
+            }
+            return;
+        }
+    }
+    eprintln!("no commit statuses found in first 20 projects");
+}
+
+/// Exercises Pipeline schedules across the first projects.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn pipeline_schedules_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let projects = client.projects().expect("projects failed");
+
+    for p in projects.iter().take(20) {
+        let pid = i64::from(p.id);
+        let Ok(schedules) = client.pipeline_schedules(pid) else {
+            continue;
+        };
+        if let Some(first) = schedules.first() {
+            eprintln!("project #{pid} pipeline schedules: {}", schedules.len());
+            let one = client
+                .pipeline_schedule(pid, first.id)
+                .expect("pipeline_schedule failed");
+            assert_eq!(one.id, first.id);
+            eprintln!(
+                "  #{} '{}' cron={} active={}",
+                one.id,
+                one.description.as_deref().unwrap_or("?"),
+                one.cron.as_deref().unwrap_or("?"),
+                one.active
+            );
+            return;
+        }
+    }
+    eprintln!("no pipeline schedules found in first 20 projects");
+}
+
+/// Exercises Protected branches/tags/environments on the first project.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn protected_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let Some(project) = client.projects().expect("projects failed").first().cloned() else {
+        eprintln!("no projects - skipping");
+        return;
+    };
+    let pid = i64::from(project.id);
+
+    let branches = client
+        .protected_branches(pid)
+        .expect("protected_branches failed");
+    eprintln!("project #{pid} protected branches: {}", branches.len());
+    for b in branches.iter().take(5) {
+        eprintln!(
+            "  {} (push rules {}, merge rules {})",
+            b.name,
+            b.push_access_levels.len(),
+            b.merge_access_levels.len()
+        );
+    }
+    if let Some(first) = branches.first() {
+        let one = client
+            .protected_branch(pid, &first.name)
+            .expect("protected_branch failed");
+        assert_eq!(one.name, first.name);
+    }
+
+    let tags = client.protected_tags(pid).expect("protected_tags failed");
+    eprintln!("  protected tags: {}", tags.len());
+
+    match client.protected_environments(pid) {
+        Ok(envs) => eprintln!("  protected environments: {}", envs.len()),
+        Err(e) => eprintln!("  protected environments not accessible: {e}"),
+    }
+}
+
+/// Exercises Emoji reactions: find an issue with reactions and read them.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn award_emoji_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let query = IssueQuery::new()
+        .with_scope(IssueScope::All)
+        .with_state(IssueStateFilter::All);
+    let issues = client.issues(&query).expect("issues failed");
+
+    for issue in issues.iter().take(50) {
+        let Some(pid) = issue.project_id else { continue };
+        let awards = client
+            .issue_award_emoji(i64::from(pid), i64::from(issue.iid))
+            .expect("issue_award_emoji failed");
+        if !awards.is_empty() {
+            eprintln!("issue {pid}!{} reactions: {}", issue.iid, awards.len());
+            for a in awards.iter().take(10) {
+                eprintln!("  :{}:", a.name.as_deref().unwrap_or("?"));
+            }
+            return;
+        }
+    }
+    eprintln!("no emoji reactions found in first 50 issues");
+}
+
+/// Exercises Group releases + Group wikis via the first visible group.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn group_releases_and_wikis_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let Some(group) = client.groups().expect("groups failed").first().cloned() else {
+        eprintln!("no groups - skipping");
+        return;
+    };
+
+    match client.group_releases(group.id) {
+        Ok(rels) => eprintln!("group #{} releases: {}", group.id, rels.len()),
+        Err(e) => eprintln!("group releases not accessible: {e}"),
+    }
+
+    match client.group_wiki_pages(group.id) {
+        Ok(pages) => {
+            eprintln!("group #{} wiki pages: {}", group.id, pages.len());
+            if let Some(first) = pages.first() {
+                let one = client
+                    .group_wiki_page(group.id, &first.slug)
+                    .expect("group_wiki_page failed");
+                eprintln!("  wiki '{}' fetched", one.title);
+            }
+        }
+        Err(e) => eprintln!("group wikis not accessible: {e}"),
+    }
+}

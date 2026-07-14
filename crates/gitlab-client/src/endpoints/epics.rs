@@ -41,6 +41,14 @@ pub trait EpicEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn epic_children(&self, group_id: i64, epic_iid: i64) -> Result<Vec<Epic>, Error>;
+
+    /// List epics linked (related) to an epic — the `related_epics` category,
+    /// distinct from parent/child nesting.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn epic_related(&self, group_id: i64, epic_iid: i64) -> Result<Vec<Epic>, Error>;
 }
 
 impl EpicEndpoints for GitlabClient {
@@ -61,6 +69,12 @@ impl EpicEndpoints for GitlabClient {
     fn epic_children(&self, group_id: i64, epic_iid: i64) -> Result<Vec<Epic>, Error> {
         self.get_paginated(&format!(
             "api/v4/groups/{group_id}/epics/{epic_iid}/epics"
+        ))
+    }
+
+    fn epic_related(&self, group_id: i64, epic_iid: i64) -> Result<Vec<Epic>, Error> {
+        self.get_paginated(&format!(
+            "api/v4/groups/{group_id}/epics/{epic_iid}/related_epics"
         ))
     }
 }

@@ -3,6 +3,7 @@
 //!
 //! All endpoints here are **read-only** (GET) — no create/update/delete.
 
+mod award_emoji;
 mod boards;
 mod ci;
 mod commits;
@@ -16,9 +17,12 @@ mod issues;
 mod iterations;
 mod labels;
 mod merge_requests;
+mod metadata;
 mod milestones;
 mod notes;
+mod pipeline_schedules;
 mod projects;
+mod protected;
 mod releases;
 mod repository;
 mod resource_events;
@@ -29,6 +33,7 @@ mod todos;
 mod users;
 mod wikis;
 
+pub use award_emoji::AwardEmojiEndpoints;
 pub use boards::BoardEndpoints;
 pub use ci::{JobEndpoints, PipelineEndpoints, PipelineQuery};
 pub use commits::CommitEndpoints;
@@ -42,9 +47,12 @@ pub use issues::{IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter};
 pub use iterations::IterationEndpoints;
 pub use labels::LabelEndpoints;
 pub use merge_requests::{MergeRequestEndpoints, MergeRequestQuery};
+pub use metadata::MetadataEndpoints;
 pub use milestones::MilestoneEndpoints;
 pub use notes::NoteEndpoints;
+pub use pipeline_schedules::PipelineScheduleEndpoints;
 pub use projects::ProjectEndpoints;
+pub use protected::ProtectedEndpoints;
 pub use releases::ReleaseEndpoints;
 pub use repository::RepositoryEndpoints;
 pub use resource_events::ResourceEventEndpoints;

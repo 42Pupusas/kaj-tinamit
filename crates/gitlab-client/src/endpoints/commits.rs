@@ -1,6 +1,6 @@
 //! Commit read endpoints.
 
-use gitlab_model::{CommitDiff, CommitWithDiffs, GitlabCommit};
+use gitlab_model::{CommitDiff, CommitStatus, CommitWithDiffs, GitlabCommit};
 use json_bourne::FromJson;
 
 use crate::client::GitlabClient;
@@ -50,6 +50,14 @@ pub trait CommitEndpoints {
         from: &str,
         to: &str,
     ) -> Result<Vec<CommitDiff>, Error>;
+
+    /// List the CI/external statuses reported against a commit (the per-commit
+    /// pipeline/check rollup).
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn commit_statuses(&self, project_id: i64, sha: &str) -> Result<Vec<CommitStatus>, Error>;
 }
 
 impl CommitEndpoints for GitlabClient {
@@ -85,5 +93,11 @@ impl CommitEndpoints for GitlabClient {
             to.percent_encode()
         ))?;
         Ok(result.diffs)
+    }
+
+    fn commit_statuses(&self, project_id: i64, sha: &str) -> Result<Vec<CommitStatus>, Error> {
+        self.get_paginated(&format!(
+            "api/v4/projects/{project_id}/repository/commits/{sha}/statuses"
+        ))
     }
 }

@@ -200,6 +200,22 @@ pub trait JobEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn job_trace(&self, project_id: i64, job_id: i64) -> Result<String, Error>;
+
+    /// Retrieve the raw text content of a single artifact file within a job's
+    /// archive, at `artifact_path`.
+    ///
+    /// Binary artifacts are lossily UTF-8 decoded by the transport; prefer
+    /// this for text artifacts (reports, logs, coverage).
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn job_artifact_file(
+        &self,
+        project_id: i64,
+        job_id: i64,
+        artifact_path: &str,
+    ) -> Result<String, Error>;
 }
 
 impl JobEndpoints for GitlabClient {
@@ -225,6 +241,18 @@ impl JobEndpoints for GitlabClient {
 
     fn job_trace(&self, project_id: i64, job_id: i64) -> Result<String, Error> {
         self.get_raw(&format!("api/v4/projects/{project_id}/jobs/{job_id}/trace"))
+    }
+
+    fn job_artifact_file(
+        &self,
+        project_id: i64,
+        job_id: i64,
+        artifact_path: &str,
+    ) -> Result<String, Error> {
+        self.get_raw(&format!(
+            "api/v4/projects/{project_id}/jobs/{job_id}/artifacts/{}",
+            artifact_path.percent_encode()
+        ))
     }
 }
 
