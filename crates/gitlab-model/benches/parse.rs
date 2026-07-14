@@ -5,9 +5,10 @@
 //! regressions in `json-bourne` and in our derive usage.
 
 use gitlab_model::{
-    Blob, Branch, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject, GitlabUser,
-    Job, Label, Member, MergeRequest, PipelineDetail, PipelineSummary, RepositoryFile, Tag,
-    TreeEntry, WikiPage,
+    Blob, Branch, CommitWithDiffs, Contributor, Discussion, GitlabCommit, GitlabEvent, GitlabGroup,
+    GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member, MergeRequest, MergeRequestChanges,
+    Milestone, PipelineDetail, PipelineSummary, PipelineVariable, RepositoryFile, Tag, TreeEntry,
+    WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -22,6 +23,31 @@ macro_rules! bench_parse {
         fn $name(bencher: divan::Bencher) {
             bencher.bench(|| {
                 let v: $ty = parse_str(divan::black_box($json)).unwrap();
+                divan::black_box(v);
+            });
+        }
+    };
+}
+
+/// Declare a `#[divan::bench]` that parses a JSON array of `count` copies of
+/// `$json` into `Vec<$ty>` — the paginated hot path.
+macro_rules! bench_parse_list {
+    ($name:ident, $ty:ty, $count:expr, $json:expr) => {
+        #[divan::bench]
+        fn $name(bencher: divan::Bencher) {
+            let arr = {
+                let mut s = String::from("[");
+                for i in 0..$count {
+                    if i > 0 {
+                        s.push(',');
+                    }
+                    s.push_str($json);
+                }
+                s.push(']');
+                s
+            };
+            bencher.bench(|| {
+                let v: Vec<$ty> = parse_str(divan::black_box(&arr)).unwrap();
                 divan::black_box(v);
             });
         }
@@ -181,4 +207,132 @@ bench_parse!(
     "pipeline":{"id":6,"project_id":1,"ref":"main","sha":"0ff3ae19","status":"pending"},
     "commit":{"id":"0ff3ae19","short_id":"0ff3","title":"Fix","message":"Fix the thing"},
     "web_url":"https://example.com/foo/bar/-/jobs/7"}"#
+);
+
+// ---------------------------------------------------------------------------
+// Other direct-return types (parsed straight off an endpoint, not just as a
+// nested field).
+// ---------------------------------------------------------------------------
+
+bench_parse!(
+    milestone,
+    Milestone,
+    r#"{"id":12,"iid":3,"project_id":7,"title":"v1.0","description":"First release",
+    "state":"active","due_date":"2022-06-01","created_at":"2022-01-01T00:00:00Z",
+    "updated_at":"2022-02-01T00:00:00Z"}"#
+);
+
+bench_parse!(
+    contributor,
+    Contributor,
+    r#"{"name":"Example User","email":"example@example.com","commits":117,
+    "additions":0,"deletions":0}"#
+);
+
+bench_parse!(
+    pipeline_variable,
+    PipelineVariable,
+    r#"{"key":"RUN_NIGHTLY_BUILD","variable_type":"env_var","value":"true"}"#
+);
+
+bench_parse!(
+    wiki_page_list,
+    WikiPageList,
+    r#"{"slug":"home","title":"Home"}"#
+);
+
+bench_parse!(
+    discussion,
+    Discussion,
+    r#"{"id":"abc123","individual_note":false,"notes":[
+    {"id":1,"body":"A comment","author":{"id":2,"username":"alice","name":"Alice"},
+    "created_at":"2022-01-01T00:00:00Z","updated_at":"2022-01-01T00:00:00Z","system":false,
+    "noteable_type":"MergeRequest","resolvable":true,"resolved":false}]}"#
+);
+
+bench_parse!(
+    merge_request_changes,
+    MergeRequestChanges,
+    r#"{"id":99,"iid":12,"changes_count":"1","overflow":false,"changes":[
+    {"old_path":"a.rs","new_path":"a.rs","a_mode":"100644","b_mode":"100644",
+    "new_file":false,"renamed_file":false,"deleted_file":false,
+    "diff":"@@ -1,3 +1,4 @@\n line\n+added\n line\n"}]}"#
+);
+
+bench_parse!(
+    commit_with_diffs,
+    CommitWithDiffs,
+    r#"{"id":"0ff3ae19","short_id":"0ff3","title":"Fix","message":"Fix the thing",
+    "author_name":"Alice","author_email":"alice@example.com","authored_date":"2022-01-01T00:00:00Z",
+    "committer_name":"Alice","committer_email":"alice@example.com","committed_date":"2022-01-01T00:00:00Z",
+    "parent_ids":["a1b2c3"],"web_url":"https://example.com/-/commit/0ff3ae19",
+    "stats":{"additions":10,"deletions":2,"total":12}}"#
+);
+
+// ---------------------------------------------------------------------------
+// Paginated list parses — `Vec<T>` of 20 elements, the real hot path for any
+// endpoint that paginates. This is where parse cost actually accrues.
+// ---------------------------------------------------------------------------
+
+const LIST_LEN: usize = 20;
+
+bench_parse_list!(
+    list_project,
+    GitlabProject,
+    LIST_LEN,
+    r#"{"id":42,"description":"A project","visibility":"private","name":"widget",
+    "name_with_namespace":"Group / widget","path":"widget","path_with_namespace":"group/widget",
+    "open_issues_count":3,"created_at":"2021-01-01T00:00:00Z","last_activity_at":"2022-01-01T00:00:00Z",
+    "creator_id":1,"namespace":{"id":5,"name":"Group","path":"group","kind":"group","full_path":"group"},
+    "archived":false}"#
+);
+
+bench_parse_list!(
+    list_issue,
+    GitlabIssue,
+    LIST_LEN,
+    r#"{"id":1,"iid":7,"project_id":3,"title":"Something broke",
+    "description":"A description with detail.","state":"opened","type":"ISSUE",
+    "labels":["bug","backend"],"author":{"id":2,"username":"alice","name":"Alice","state":"active"},
+    "upvotes":5,"downvotes":0,"user_notes_count":12,
+    "web_url":"https://gitlab.example.com/g/p/-/issues/7",
+    "created_at":"2022-01-01T00:00:00Z","updated_at":"2022-02-01T00:00:00Z"}"#
+);
+
+bench_parse_list!(
+    list_commit,
+    GitlabCommit,
+    LIST_LEN,
+    r#"{"id":"0ff3ae19","short_id":"0ff3ae19","title":"Fix","message":"Fix the thing",
+    "author_name":"Alice","author_email":"alice@example.com","authored_date":"2022-01-01T00:00:00Z",
+    "committer_name":"Alice","committer_email":"alice@example.com","committed_date":"2022-01-01T00:00:00Z",
+    "created_at":"2022-01-01T00:00:00Z","parent_ids":["a1b2c3"],"web_url":"https://example.com/-/commit/0ff3ae19"}"#
+);
+
+bench_parse_list!(
+    list_job,
+    Job,
+    LIST_LEN,
+    r#"{"id":7,"name":"teaspoon","stage":"test","status":"failed","ref":"main",
+    "failure_reason":"script_failure","duration":0.173,"tag_list":["docker runner"],
+    "pipeline":{"id":6,"project_id":1,"ref":"main","sha":"0ff3ae19","status":"pending"},
+    "web_url":"https://example.com/foo/bar/-/jobs/7"}"#
+);
+
+bench_parse_list!(
+    list_member,
+    Member,
+    LIST_LEN,
+    r#"{"id":1,"username":"raymond_smith","name":"Raymond Smith","state":"active",
+    "avatar_url":"https://example.com/a.png","web_url":"https://example.com/raymond",
+    "access_level":30,"expires_at":"2025-10-22","created_at":"2012-09-22T14:13:35Z"}"#
+);
+
+bench_parse_list!(
+    list_event,
+    GitlabEvent,
+    LIST_LEN,
+    r#"{"id":101,"action_name":"pushed to","target_type":"Note",
+    "created_at":"2022-01-01T00:00:00Z","author_username":"alice",
+    "author":{"id":2,"username":"alice","name":"Alice"}}"#
 );
