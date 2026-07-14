@@ -5,6 +5,7 @@
 
 mod commits;
 mod events;
+mod groups;
 mod issues;
 mod merge_requests;
 mod milestones;
@@ -15,6 +16,7 @@ mod wikis;
 
 pub use commits::CommitEndpoints;
 pub use events::EventEndpoints;
+pub use groups::{GroupEndpoints, MemberEndpoints};
 pub use issues::{IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter};
 pub use merge_requests::{MergeRequestEndpoints, MergeRequestQuery};
 pub use milestones::MilestoneEndpoints;

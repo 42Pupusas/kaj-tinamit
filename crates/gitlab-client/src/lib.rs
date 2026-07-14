@@ -28,9 +28,9 @@ mod pagination;
 
 pub use client::GitlabClient;
 pub use endpoints::{
-    CommitEndpoints, EventEndpoints, IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter,
-    MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints, ProjectEndpoints,
-    RepositoryEndpoints, UserEndpoints, WikiEndpoints,
+    CommitEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints, IssueQuery, IssueScope,
+    IssueStateFilter, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints,
+    ProjectEndpoints, RepositoryEndpoints, UserEndpoints, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -38,8 +38,9 @@ pub use pagination::PaginationConfig;
 /// Bring every endpoint extension trait into scope in one `use`.
 pub mod prelude {
     pub use crate::endpoints::{
-        CommitEndpoints, EventEndpoints, IssueEndpoints, MergeRequestEndpoints, MilestoneEndpoints,
-        ProjectEndpoints, RepositoryEndpoints, UserEndpoints, WikiEndpoints,
+        CommitEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints, MemberEndpoints,
+        MergeRequestEndpoints, MilestoneEndpoints, ProjectEndpoints, RepositoryEndpoints,
+        UserEndpoints, WikiEndpoints,
     };
 }
 

@@ -10,6 +10,7 @@
 
 pub mod commit;
 pub mod event;
+pub mod group;
 pub mod issue;
 pub mod merge_request;
 pub mod project;
@@ -19,6 +20,7 @@ pub mod wiki;
 
 pub use commit::*;
 pub use event::*;
+pub use group::*;
 pub use issue::*;
 pub use merge_request::*;
 pub use project::*;

@@ -86,6 +86,53 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Groups + Members categories: list groups, fetch one, its
+/// members (direct + inherited), subgroups, and group projects.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn groups_and_members_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let groups = client.groups().expect("groups request failed");
+    eprintln!("visible groups: {}", groups.len());
+    for g in groups.iter().take(10) {
+        eprintln!("  #{} {}", g.id, g.full_path.as_deref().unwrap_or(&g.path));
+    }
+
+    let Some(group) = groups.first() else {
+        eprintln!("no groups visible - skipping detail checks");
+        return;
+    };
+    let gid = group.id;
+
+    let one = client.group(gid).expect("group request failed");
+    assert_eq!(one.id, gid);
+
+    let members = client.group_members(gid).expect("group_members failed");
+    eprintln!("  direct members: {}", members.len());
+    for m in members.iter().take(10) {
+        eprintln!("    @{} [{:?}]", m.username, m.role());
+    }
+
+    let all = client
+        .group_members_all(gid)
+        .expect("group_members_all failed");
+    eprintln!("  members incl. inherited: {}", all.len());
+
+    let subs = client.subgroups(gid).expect("subgroups failed");
+    eprintln!("  subgroups: {}", subs.len());
+
+    let gprojects = client.group_projects(gid).expect("group_projects failed");
+    eprintln!("  group projects: {}", gprojects.len());
+
+    // If the group has a direct member, round-trip a single fetch.
+    if let Some(first) = members.first() {
+        let single = client
+            .group_member(gid, first.id)
+            .expect("group_member failed");
+        assert_eq!(single.id, first.id);
+    }
+}
+
 /// Exercises the Repository category (tree, branches, tags, file, blame,
 /// contributors) against the first project that has a populated repository.
 #[test]
