@@ -86,6 +86,30 @@ fn project_scoped_smoke() {
     eprintln!("  project events: {}", pevents.len());
 }
 
+/// Exercises the Snippets category: personal snippets (list + single + raw)
+/// and public snippets. Personal snippets may be empty on the test account,
+/// so the detail checks are conditional; public snippets exercise parsing.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn snippets_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+
+    let mine = client.snippets().expect("snippets request failed");
+    eprintln!("personal snippets: {}", mine.len());
+    for s in mine.iter().take(5) {
+        eprintln!("  #{} {}", s.id, s.title.as_deref().unwrap_or("<untitled>"));
+    }
+    if let Some(first) = mine.first() {
+        let one = client.snippet(first.id).expect("snippet request failed");
+        assert_eq!(one.id, first.id);
+        let raw = client.snippet_raw(first.id).expect("snippet_raw failed");
+        eprintln!("  snippet {} raw: {} chars", first.id, raw.len());
+    }
+
+    let public = client.public_snippets().expect("public_snippets failed");
+    eprintln!("public snippets: {}", public.len());
+}
+
 /// Exercises the Releases category: walk projects to find one with releases,
 /// then round-trip a single release by tag and the latest-release permalink.
 #[test]

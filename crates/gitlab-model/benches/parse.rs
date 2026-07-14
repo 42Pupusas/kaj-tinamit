@@ -7,8 +7,8 @@
 use gitlab_model::{
     Blob, Branch, CommitWithDiffs, Contributor, Discussion, GitlabCommit, GitlabEvent, GitlabGroup,
     GitlabIssue, GitlabProject, GitlabUser, Job, Label, Member, MergeRequest, MergeRequestChanges,
-    Milestone, PipelineDetail, PipelineSummary, PipelineVariable, Release, RepositoryFile, Tag,
-    TreeEntry, WikiPage, WikiPageList,
+    Milestone, PipelineDetail, PipelineSummary, PipelineVariable, Release, RepositoryFile, Snippet,
+    Tag, TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -280,6 +280,16 @@ bench_parse!(
     "issue_stats":{"total":98,"closed":76}}],
     "assets":{"count":6,"sources":[{"format":"zip","url":"https://example.com/x.zip"}],
     "links":[{"id":2,"name":"asset.msi","url":"https://example.com/msi","link_type":"other"}]}}"###
+);
+
+bench_parse!(
+    snippet,
+    Snippet,
+    r#"{"id":1,"title":"test","file_name":"add.rb","description":"Ruby test snippet",
+    "visibility":"private","author":{"id":1,"username":"john_smith","email":"john@example.com",
+    "name":"John Smith","state":"active"},"expires_at":null,"updated_at":"2012-06-28T10:52:04Z",
+    "created_at":"2012-06-28T10:52:04Z","project_id":null,"web_url":"http://example.com/snippets/1",
+    "raw_url":"http://example.com/snippets/1/raw"}"#
 );
 
 // ---------------------------------------------------------------------------

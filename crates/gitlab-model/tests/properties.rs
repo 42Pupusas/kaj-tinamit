@@ -130,6 +130,12 @@ round_trip!(release_assets, ReleaseAssets);
 round_trip!(release_evidence, ReleaseEvidence);
 round_trip!(release, Release);
 
+// snippet
+round_trip!(snippet_author, SnippetAuthor);
+round_trip!(snippet_file, SnippetFile);
+round_trip!(snippet, Snippet);
+round_trip!(snippet_user_agent_detail, SnippetUserAgentDetail);
+
 // ci
 round_trip!(ci_status, CiStatus);
 round_trip!(ci_user, CiUser);

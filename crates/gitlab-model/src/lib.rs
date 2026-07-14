@@ -18,6 +18,7 @@ pub mod merge_request;
 pub mod project;
 pub mod release;
 pub mod repository;
+pub mod snippet;
 pub mod user;
 pub mod wiki;
 
@@ -31,6 +32,7 @@ pub use merge_request::*;
 pub use project::*;
 pub use release::*;
 pub use repository::*;
+pub use snippet::*;
 pub use user::*;
 pub use wiki::*;
 

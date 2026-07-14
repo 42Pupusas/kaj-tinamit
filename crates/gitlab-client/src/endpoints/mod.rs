@@ -14,6 +14,7 @@ mod milestones;
 mod projects;
 mod releases;
 mod repository;
+mod snippets;
 mod users;
 mod wikis;
 
@@ -28,5 +29,6 @@ pub use milestones::MilestoneEndpoints;
 pub use projects::ProjectEndpoints;
 pub use releases::ReleaseEndpoints;
 pub use repository::RepositoryEndpoints;
+pub use snippets::{ProjectSnippetEndpoints, SnippetEndpoints};
 pub use users::UserEndpoints;
 pub use wikis::WikiEndpoints;
