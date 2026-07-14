@@ -28,12 +28,13 @@ mod pagination;
 
 pub use client::GitlabClient;
 pub use endpoints::{
-    CommitEndpoints, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
-    EnvironmentEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints, IssueQuery, IssueScope, IssueStateFilter, JobEndpoints, LabelEndpoints,
-    MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints, NoteEndpoints,
-    PipelineEndpoints, PipelineQuery, ProjectEndpoints, ProjectSnippetEndpoints, ReleaseEndpoints,
-    RepositoryEndpoints, RunnerEndpoints, RunnerQuery, SnippetEndpoints, UserEndpoints,
-    WikiEndpoints,
+    BoardEndpoints, CommitEndpoints, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
+    EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
+    IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
+    LabelEndpoints, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery, MilestoneEndpoints,
+    NoteEndpoints, PipelineEndpoints, PipelineQuery, ProjectEndpoints, ProjectSnippetEndpoints,
+    ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints, RunnerEndpoints, RunnerQuery,
+    SearchEndpoints, SnippetEndpoints, TodoEndpoints, UserEndpoints, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -41,11 +42,13 @@ pub use pagination::PaginationConfig;
 /// Bring every endpoint extension trait into scope in one `use`.
 pub mod prelude {
     pub use crate::endpoints::{
-        CommitEndpoints, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
-        EnvironmentEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints, JobEndpoints, LabelEndpoints, MemberEndpoints, MergeRequestEndpoints,
-        MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, ProjectEndpoints,
-        ProjectSnippetEndpoints, ReleaseEndpoints, RepositoryEndpoints, RunnerEndpoints,
-        SnippetEndpoints, UserEndpoints, WikiEndpoints,
+        BoardEndpoints, CommitEndpoints, DeployKeyEndpoints, DeployTokenEndpoints,
+        DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints,
+        IssueEndpoints, IssueLinkEndpoints, IterationEndpoints, JobEndpoints, LabelEndpoints,
+        MemberEndpoints, MergeRequestEndpoints, MilestoneEndpoints, NoteEndpoints,
+        PipelineEndpoints, ProjectEndpoints, ProjectSnippetEndpoints, ReleaseEndpoints,
+        RepositoryEndpoints, ResourceEventEndpoints, RunnerEndpoints, SearchEndpoints,
+        SnippetEndpoints, TodoEndpoints, UserEndpoints, WikiEndpoints,
     };
 }
 

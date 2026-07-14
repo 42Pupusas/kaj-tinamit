@@ -568,3 +568,258 @@ fn issues_smoke() {
         );
     }
 }
+
+/// Exercises the Todos category: list the caller's pending to-dos.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn todos_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let todos = client.todos().expect("todos request failed");
+    eprintln!("pending to-dos: {}", todos.len());
+    for t in todos.iter().take(10) {
+        eprintln!(
+            "  #{} [{:?}] {} -> {}",
+            t.id,
+            t.action_name,
+            t.target_type.as_deref().unwrap_or("?"),
+            t.target_url.as_deref().unwrap_or("?")
+        );
+    }
+    // The `done` filter must also parse a valid response.
+    let done = client.todos_by_state("done").expect("todos_by_state failed");
+    eprintln!("done to-dos: {}", done.len());
+}
+
+/// Exercises the Search category at instance scope (projects, issues, MRs)
+/// and project scope (issues, blobs) using a broad term.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn search_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+
+    let projects = client.search_projects("a").expect("search_projects failed");
+    eprintln!("global project search hits: {}", projects.len());
+
+    let issues = client.search_issues("the").expect("search_issues failed");
+    eprintln!("global issue search hits: {}", issues.len());
+
+    let mrs = client
+        .search_merge_requests("the")
+        .expect("search_merge_requests failed");
+    eprintln!("global MR search hits: {}", mrs.len());
+
+    // Project-scoped code search on the first membership project.
+    if let Some(project) = client.projects().expect("projects failed").first() {
+        let pid = i64::from(project.id);
+        let blobs = client
+            .project_search_blobs(pid, "fn")
+            .expect("project_search_blobs failed");
+        eprintln!("project #{pid} blob search hits: {}", blobs.len());
+        for b in blobs.iter().take(5) {
+            eprintln!(
+                "  {}:{} ",
+                b.filename.as_deref().unwrap_or("?"),
+                b.startline.unwrap_or(0)
+            );
+        }
+        let pissues = client
+            .project_search_issues(pid, "the")
+            .expect("project_search_issues failed");
+        eprintln!("project #{pid} issue search hits: {}", pissues.len());
+    }
+}
+
+/// Exercises the Issues Statistics category at instance and project scope.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn issues_statistics_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let query = IssueQuery::new().with_scope(IssueScope::All);
+    let stats = client
+        .issues_statistics(&query)
+        .expect("issues_statistics failed");
+    let c = stats.counts();
+    eprintln!(
+        "instance issue stats: all={} opened={} closed={}",
+        c.all, c.opened, c.closed
+    );
+
+    if let Some(project) = client.projects().expect("projects failed").first() {
+        let pstats = client
+            .project_issues_statistics(project.id, &IssueQuery::new())
+            .expect("project_issues_statistics failed");
+        let pc = pstats.counts();
+        eprintln!(
+            "project #{} issue stats: all={} opened={} closed={}",
+            project.id, pc.all, pc.opened, pc.closed
+        );
+    }
+}
+
+/// Exercises the Iterations category via the first visible group and its
+/// cadences, plus project-inherited iterations.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn iterations_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+
+    if let Some(group) = client.groups().expect("groups failed").first() {
+        match client.group_iterations(group.id) {
+            Ok(iters) => {
+                eprintln!("group #{} iterations: {}", group.id, iters.len());
+                for it in iters.iter().take(5) {
+                    eprintln!(
+                        "  #{} [{:?}] {} ({}..{})",
+                        it.id,
+                        it.state,
+                        it.title.as_deref().unwrap_or("?"),
+                        it.start_date.as_deref().unwrap_or("?"),
+                        it.due_date.as_deref().unwrap_or("?")
+                    );
+                }
+            }
+            Err(e) => eprintln!("group iterations not accessible: {e}"),
+        }
+        match client.group_iteration_cadences(group.id) {
+            Ok(cadences) => eprintln!("group #{} cadences: {}", group.id, cadences.len()),
+            Err(e) => eprintln!("group cadences not accessible: {e}"),
+        }
+    }
+
+    if let Some(project) = client.projects().expect("projects failed").first() {
+        match client.project_iterations(i64::from(project.id)) {
+            Ok(iters) => eprintln!("project #{} iterations: {}", project.id, iters.len()),
+            Err(e) => eprintln!("project iterations not accessible: {e}"),
+        }
+    }
+}
+
+/// Exercises the Boards category: project boards (+ lists) and group boards.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn boards_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+
+    if let Some(project) = client.projects().expect("projects failed").first() {
+        let pid = i64::from(project.id);
+        let boards = client.project_boards(pid).expect("project_boards failed");
+        eprintln!("project #{pid} boards: {}", boards.len());
+        if let Some(first) = boards.first() {
+            let one = client
+                .project_board(pid, first.id)
+                .expect("project_board failed");
+            assert_eq!(one.id, first.id);
+            let lists = client
+                .project_board_lists(pid, first.id)
+                .expect("project_board_lists failed");
+            eprintln!("  board {} lists: {}", first.id, lists.len());
+            for l in lists.iter().take(5) {
+                eprintln!(
+                    "    [{}] {}",
+                    l.list_type.as_deref().unwrap_or("?"),
+                    l.label.as_ref().map_or("-", |lb| lb.name.as_str())
+                );
+            }
+        }
+    }
+
+    if let Some(group) = client.groups().expect("groups failed").first() {
+        match client.group_boards(group.id) {
+            Ok(boards) => eprintln!("group #{} boards: {}", group.id, boards.len()),
+            Err(e) => eprintln!("group boards not accessible: {e}"),
+        }
+    }
+}
+
+/// Exercises the Epics category (premium): group epics, a single epic, its
+/// issues and child epics. Tolerates 403/404 on non-premium instances.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn epics_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+
+    let Some(group) = client.groups().expect("groups failed").first().cloned() else {
+        eprintln!("no groups visible - skipping epics");
+        return;
+    };
+    match client.group_epics(group.id) {
+        Ok(epics) => {
+            eprintln!("group #{} epics: {}", group.id, epics.len());
+            if let Some(first) = epics.first() {
+                let one = client.epic(group.id, first.iid).expect("epic failed");
+                assert_eq!(one.iid, first.iid);
+                let issues = client
+                    .epic_issues(group.id, first.iid)
+                    .expect("epic_issues failed");
+                eprintln!("  epic {} issues: {}", first.iid, issues.len());
+                let children = client
+                    .epic_children(group.id, first.iid)
+                    .expect("epic_children failed");
+                eprintln!("  epic {} children: {}", first.iid, children.len());
+            }
+        }
+        Err(e) => eprintln!("epics not accessible (likely non-premium): {e}"),
+    }
+}
+
+/// Exercises the Issue links + Resource events categories: find an issue and
+/// round-trip its links and label/state/milestone events.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn issue_links_and_events_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let query = IssueQuery::new()
+        .with_scope(IssueScope::All)
+        .with_state(IssueStateFilter::All);
+    let issues = client.issues(&query).expect("issues request failed");
+
+    let mut linked = false;
+    let mut evented = false;
+    for issue in issues.iter().take(50) {
+        let Some(pid) = issue.project_id else { continue };
+        let pid = i64::from(pid);
+        let iid = i64::from(issue.iid);
+
+        if !linked {
+            let links = client.issue_links(pid, iid).expect("issue_links failed");
+            if !links.is_empty() {
+                eprintln!("issue {pid}!{iid} links: {}", links.len());
+                for l in links.iter().take(5) {
+                    eprintln!("  [{:?}] !{}", l.link_type, l.iid);
+                }
+                linked = true;
+            }
+        }
+
+        if !evented {
+            let states = client
+                .issue_state_events(pid, iid)
+                .expect("issue_state_events failed");
+            let labels = client
+                .issue_label_events(pid, iid)
+                .expect("issue_label_events failed");
+            let miles = client
+                .issue_milestone_events(pid, iid)
+                .expect("issue_milestone_events failed");
+            if !states.is_empty() || !labels.is_empty() || !miles.is_empty() {
+                eprintln!(
+                    "issue {pid}!{iid} events: {} state, {} label, {} milestone",
+                    states.len(),
+                    labels.len(),
+                    miles.len()
+                );
+                evented = true;
+            }
+        }
+
+        if linked && evented {
+            break;
+        }
+    }
+    if !linked {
+        eprintln!("no issue links found in first 50 issues");
+    }
+    if !evented {
+        eprintln!("no resource events found in first 50 issues");
+    }
+}

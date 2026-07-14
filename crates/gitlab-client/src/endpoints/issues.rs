@@ -1,6 +1,6 @@
 //! Issue endpoints and the [`IssueQuery`] filter builder.
 
-use gitlab_model::GitlabIssue;
+use gitlab_model::{GitlabIssue, IssueStatistics};
 
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
@@ -172,6 +172,25 @@ pub trait IssueEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn issue(&self, project_id: i32, issue_iid: i32) -> Result<GitlabIssue, Error>;
+
+    /// Fetch instance-wide issue statistics (open/closed/all counts) matching
+    /// the given filters — cheaper than paging every issue for a summary.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn issues_statistics(&self, query: &IssueQuery) -> Result<IssueStatistics, Error>;
+
+    /// Fetch issue statistics scoped to a single project.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn project_issues_statistics(
+        &self,
+        project_id: i32,
+        query: &IssueQuery,
+    ) -> Result<IssueStatistics, Error>;
 }
 
 impl IssueEndpoints for GitlabClient {
@@ -211,6 +230,24 @@ impl IssueEndpoints for GitlabClient {
 
     fn issue(&self, project_id: i32, issue_iid: i32) -> Result<GitlabIssue, Error> {
         self.get(&format!("api/v4/projects/{project_id}/issues/{issue_iid}"))
+    }
+
+    fn issues_statistics(&self, query: &IssueQuery) -> Result<IssueStatistics, Error> {
+        self.get(&format!(
+            "api/v4/issues_statistics{}",
+            query.to_query_string()
+        ))
+    }
+
+    fn project_issues_statistics(
+        &self,
+        project_id: i32,
+        query: &IssueQuery,
+    ) -> Result<IssueStatistics, Error> {
+        self.get(&format!(
+            "api/v4/projects/{project_id}/issues_statistics{}",
+            query.to_query_string()
+        ))
     }
 }
 

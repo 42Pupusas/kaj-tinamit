@@ -77,6 +77,13 @@ pub trait MergeRequestEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn issue_time_stats(&self, project_id: i64, issue_iid: i64) -> Result<TimeStats, Error>;
+
+    /// Get time-tracking statistics for a merge request.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn merge_request_time_stats(&self, project_id: i64, mr_iid: i64) -> Result<TimeStats, Error>;
 }
 
 impl MergeRequestEndpoints for GitlabClient {
@@ -143,6 +150,12 @@ impl MergeRequestEndpoints for GitlabClient {
     fn issue_time_stats(&self, project_id: i64, issue_iid: i64) -> Result<TimeStats, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/issues/{issue_iid}/time_stats"
+        ))
+    }
+
+    fn merge_request_time_stats(&self, project_id: i64, mr_iid: i64) -> Result<TimeStats, Error> {
+        self.get(&format!(
+            "api/v4/projects/{project_id}/merge_requests/{mr_iid}/time_stats"
         ))
     }
 }

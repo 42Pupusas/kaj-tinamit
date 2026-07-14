@@ -8,39 +8,55 @@
 //! `deny_unknown_fields = false` so GitLab adding a field never breaks
 //! parsing.
 
+pub mod board;
 pub mod ci;
 pub mod commit;
 pub mod deploy;
 pub mod deployment;
+pub mod epic;
 pub mod event;
 pub mod group;
 pub mod issue;
+pub mod issue_link;
+pub mod issue_statistics;
+pub mod iteration;
 pub mod label;
 pub mod merge_request;
 pub mod note;
 pub mod project;
 pub mod release;
 pub mod repository;
+pub mod resource_event;
 pub mod runner;
+pub mod search;
 pub mod snippet;
+pub mod todo;
 pub mod user;
 pub mod wiki;
 
+pub use board::*;
 pub use ci::*;
 pub use commit::*;
 pub use deploy::*;
 pub use deployment::*;
+pub use epic::*;
 pub use event::*;
 pub use group::*;
 pub use issue::*;
+pub use issue_link::*;
+pub use issue_statistics::*;
+pub use iteration::*;
 pub use label::*;
 pub use merge_request::*;
 pub use note::*;
 pub use project::*;
 pub use release::*;
 pub use repository::*;
+pub use resource_event::*;
 pub use runner::*;
+pub use search::*;
 pub use snippet::*;
+pub use todo::*;
 pub use user::*;
 pub use wiki::*;
 

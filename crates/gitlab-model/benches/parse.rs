@@ -6,12 +6,10 @@
 
 use gitlab_model::{
     Blob, Branch, CommitWithDiffs, Contributor, DeployKey, DeployToken, Deployment, Discussion,
-    Environment, GitlabCommit,
-    GitlabEvent, GitlabGroup, GitlabIssue, GitlabNote, GitlabProject, GitlabUser, Job, Label,
-    Member,
-    MergeRequest, MergeRequestChanges, Milestone, PipelineDetail, PipelineSummary,
-    PipelineVariable, Release, RepositoryFile, Runner, RunnerDetail, Snippet, Tag, TreeEntry,
-    WikiPage, WikiPageList,
+    Environment, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabNote, GitlabProject,
+    GitlabUser, Job, Label, Member, MergeRequest, MergeRequestChanges, Milestone, PipelineDetail,
+    PipelineSummary, PipelineVariable, Release, RepositoryFile, Runner, RunnerDetail, Snippet, Tag,
+    TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
