@@ -7,10 +7,11 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["cuarentaydos"]
+repository = "https://github.com/42Pupusas/kaj-tinamit"
 
 [workspace.dependencies]
 # In-house crates (tooling/) — JSON + HTTP stack, zero crates.io where possible.
-json-bourne = { path = "../bourne/crates/bourne", features = ["derive"] }
+json-bourne = { path = "../bourne/crates/bourne", version = "0.2", features = ["derive"] }
 xibalba-client = { path = "../xibalba/xibalba-client" }
 xibalba-proto = { path = "../xibalba/xibalba-proto" }
 # rustls-rustcrypto: the crates.io 0.0.2-alpha builds against rustls 0.23.

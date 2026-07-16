@@ -5,17 +5,17 @@
 //! regressions in `json-bourne` and in our derive usage.
 
 use gitlab_model::{
-    AwardEmoji, Blob, BlameRange, Board, BoardList, Branch, Changelog, CommitStatus,
+    AwardEmoji, BlameRange, Blob, Board, BoardList, Branch, Changelog, CommitStatus,
     CommitWithDiffs, Contributor, CreatedDeployToken, DeployKey, DeployToken, Deployment,
-    Discussion, Environment,
-    Epic, EpicIssue, FileMutationResult, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue,
-    GitlabNote, GitlabProject, GitlabUser, IssueLink, IssueLinkResult, IssueStatistics, Iteration,
-    IterationCadence, Job, Label, Member, MergeRequest, MergeRequestApprovals,
-    MergeRequestChanges, Metadata, Milestone, NamespaceListing, PipelineDetail, PipelineSchedule,
-    PipelineSummary, PipelineVariable, ProtectedBranch, ProtectedEnvironment, ProtectedTag,
-    RefCommit, Release, RepositoryFile, ResourceLabelEvent, ResourceMilestoneEvent,
-    ResourceStateEvent, Runner, RunnerAuthToken, RunnerDetail, RunnerManager, SearchBlob, Snippet,
-    SnippetUserAgentDetail, Tag, Todo, TreeEntry, WikiPage, WikiPageList,
+    Discussion, Environment, Epic, EpicIssue, FileMutationResult, GitlabCommit, GitlabEvent,
+    GitlabGroup, GitlabIssue, GitlabNote, GitlabProject, GitlabUser, IssueLink, IssueLinkResult,
+    IssueStatistics, Iteration, IterationCadence, Job, Label, Member, MergeRequest,
+    MergeRequestApprovals, MergeRequestChanges, Metadata, Milestone, NamespaceListing,
+    PipelineDetail, PipelineSchedule, PipelineSummary, PipelineVariable, ProtectedBranch,
+    ProtectedEnvironment, ProtectedTag, RefCommit, Release, RepositoryFile, ResourceLabelEvent,
+    ResourceMilestoneEvent, ResourceStateEvent, Runner, RunnerAuthToken, RunnerDetail,
+    RunnerManager, SearchBlob, Snippet, SnippetUserAgentDetail, Tag, Todo, TreeEntry, WikiPage,
+    WikiPageList,
 };
 use json_bourne::parse_str;
 

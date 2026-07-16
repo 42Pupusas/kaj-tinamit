@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
+repository.workspace = true
 description = "Type-safe wire shapes for the GitLab REST API v4, (de)serialized via json-bourne."
 readme = "README.md"
 keywords = ["gitlab", "api", "rest", "serde", "model"]
