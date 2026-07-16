@@ -9,11 +9,15 @@
 //! Run: `cargo +nightly fuzz run parse_models`
 
 use gitlab_model::{
-    AwardEmoji, Blob, Board, Branch, CommitStatus, Epic, GitlabCommit, GitlabEvent, GitlabGroup,
-    GitlabIssue, GitlabProject, GitlabUser, IssueStatistics, Iteration, Job, Label, Member,
-    MergeRequest, Metadata, NamespaceListing, PipelineDetail, PipelineSchedule, PipelineSummary,
-    ProtectedBranch, RepositoryFile, ResourceLabelEvent, ResourceStateEvent, SearchBlob, Tag, Todo,
-    TreeEntry, WikiPage,
+    AwardEmoji, BlameRange, Blob, Board, BoardList, Branch, Changelog, CommitDiff, CommitStatus,
+    CommitWithDiffs, DeployKey, DeployToken, Deployment, Discussion, Environment, Epic, EpicIssue,
+    FileMutationResult, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject,
+    GitlabUser, IssueLink, IssueLinkResult, IssueStatistics, Iteration, IterationCadence, Job,
+    Label, Member, MergeRequest, MergeRequestApprovals, MergeRequestChanges, Metadata,
+    NamespaceListing, PipelineDetail, PipelineSchedule, PipelineSummary, ProtectedBranch,
+    ProtectedEnvironment, ProtectedTag, RefCommit, Release, RepositoryFile, ResourceLabelEvent,
+    ResourceMilestoneEvent, ResourceStateEvent, Runner, RunnerDetail, SearchBlob, Snippet, Tag,
+    Todo, TreeEntry, WikiPage,
 };
 use json_bourne::parse;
 use libfuzzer_sys::fuzz_target;
@@ -55,6 +59,35 @@ fuzz_target!(|data: &[u8]| {
     let _ = parse::<Epic>(data);
     let _ = parse::<Board>(data);
     let _ = parse::<Iteration>(data);
+
+    // Round two: release/snippet/deployment/runner/deploy-credential
+    // categories, plus nested MR shapes, dependency links, resource events,
+    // and repository shapes not reachable from the top-level types above.
+    let _ = parse::<Release>(data);
+    let _ = parse::<Snippet>(data);
+    let _ = parse::<Deployment>(data);
+    let _ = parse::<Environment>(data);
+    let _ = parse::<Runner>(data);
+    let _ = parse::<RunnerDetail>(data);
+    let _ = parse::<DeployKey>(data);
+    let _ = parse::<DeployToken>(data);
+    let _ = parse::<IssueLink>(data);
+    let _ = parse::<IssueLinkResult>(data);
+    let _ = parse::<EpicIssue>(data);
+    let _ = parse::<BoardList>(data);
+    let _ = parse::<IterationCadence>(data);
+    let _ = parse::<ResourceMilestoneEvent>(data);
+    let _ = parse::<ProtectedTag>(data);
+    let _ = parse::<ProtectedEnvironment>(data);
+    let _ = parse::<Changelog>(data);
+    let _ = parse::<RefCommit>(data);
+    let _ = parse::<BlameRange>(data);
+    let _ = parse::<FileMutationResult>(data);
+    let _ = parse::<CommitDiff>(data);
+    let _ = parse::<CommitWithDiffs>(data);
+    let _ = parse::<Discussion>(data);
+    let _ = parse::<MergeRequestChanges>(data);
+    let _ = parse::<MergeRequestApprovals>(data);
 
     // Arrays of the most common list types, as GitLab returns them.
     let _ = parse::<Vec<GitlabProject>>(data);
