@@ -2,13 +2,16 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// The author of a snippet. Includes `email`, which GitLab exposes on the
 /// single-snippet responses but not always on listings.
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct SnippetAuthor {
-    pub id: i64,
+    pub id: Id,
     pub username: Option<String>,
     pub name: Option<String>,
     pub email: Option<String>,
@@ -22,6 +25,7 @@ pub struct SnippetAuthor {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct SnippetFile {
     pub path: Option<String>,
     pub raw_url: Option<String>,
@@ -35,14 +39,15 @@ pub struct SnippetFile {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Snippet {
-    pub id: i64,
+    pub id: Id,
     pub title: Option<String>,
     pub file_name: Option<String>,
     pub description: Option<String>,
     pub visibility: Option<String>,
     pub author: Option<SnippetAuthor>,
-    pub project_id: Option<i64>,
+    pub project_id: Option<Id>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
     pub expires_at: Option<String>,
@@ -61,6 +66,7 @@ pub struct Snippet {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct SnippetUserAgentDetail {
     pub user_agent: Option<String>,
     pub ip_address: Option<String>,
@@ -99,7 +105,7 @@ mod tests {
             "repository_storage": "default"
         }"#;
         let s: Snippet = parse_str(json).unwrap();
-        assert_eq!(s.project_id, Some(35));
+        assert_eq!(s.project_id, Some(Id::new(35)));
         assert_eq!(s.files.len(), 1);
         assert_eq!(s.files[0].path.as_deref(), Some("a.txt"));
     }

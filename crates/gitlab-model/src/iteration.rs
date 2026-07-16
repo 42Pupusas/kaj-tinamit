@@ -4,11 +4,14 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// Iteration lifecycle state. GitLab reports this as an integer code, not a
 /// string: 1 = upcoming, 2 = current, 3 = closed. We map the closed set and
 /// fall back to [`IterationState::Unknown`] for anything new.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[non_exhaustive]
 pub enum IterationState {
     Upcoming,
     Current,
@@ -45,13 +48,14 @@ impl ToJson for IterationState {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Iteration {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
+    pub iid: Id,
     /// The owning group; iterations are never project-scoped in GitLab even
     /// when queried through a project.
-    pub group_id: Option<i64>,
+    pub group_id: Option<Id>,
     pub title: Option<String>,
     pub description: Option<String>,
     pub state: Option<IterationState>,
@@ -60,7 +64,7 @@ pub struct Iteration {
     pub start_date: Option<String>,
     pub due_date: Option<String>,
     /// The cadence this iteration belongs to.
-    pub iteration_cadence_id: Option<i64>,
+    pub iteration_cadence_id: Option<Id>,
     pub web_url: Option<String>,
     pub sequence: Option<i64>,
 }
@@ -70,8 +74,9 @@ pub struct Iteration {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IterationCadence {
-    pub id: i64,
+    pub id: Id,
     pub title: Option<String>,
     pub description: Option<String>,
     #[bourne(default)]

@@ -3,26 +3,30 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// One access rule inside a protected-branch/tag entry (who may push, merge,
 /// or deploy). GitLab reports `access_level` as an integer plus a
 /// human-readable description.
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct AccessRule {
-    pub id: Option<i64>,
+    pub id: Option<Id>,
     pub access_level: Option<i64>,
     pub access_level_description: Option<String>,
-    pub user_id: Option<i64>,
-    pub group_id: Option<i64>,
+    pub user_id: Option<Id>,
+    pub group_id: Option<Id>,
 }
 
 /// A protected branch and its push/merge access rules.
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ProtectedBranch {
-    pub id: Option<i64>,
+    pub id: Option<Id>,
     pub name: String,
     #[bourne(default)]
     pub push_access_levels: Vec<AccessRule>,
@@ -38,6 +42,7 @@ pub struct ProtectedBranch {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ProtectedTag {
     pub name: String,
     #[bourne(default)]
@@ -48,6 +53,7 @@ pub struct ProtectedTag {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ProtectedEnvironment {
     pub name: String,
     #[bourne(default)]

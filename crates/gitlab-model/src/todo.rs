@@ -2,14 +2,17 @@
 //! action queue (review requests, mentions, assignments). The reviewer's
 //! inbox, from a delivery standpoint.
 
-use json_bourne::{FromJson, ToJson};
+use json_bourne::{FromJson, Lexer, ToJson};
 
+use crate::Id;
 use crate::issue::Author;
 
-/// Why a to-do was created.
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// Why a to-do was created. Unknown values fall back to
+/// [`TodoActionName::Unknown`] so parsing never fails on an action GitLab
+/// adds later.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum TodoActionName {
     Assigned,
     Mentioned,
@@ -20,15 +23,76 @@ pub enum TodoActionName {
     DirectlyAddressed,
     MergeTrainRemoved,
     ReviewRequested,
+    Unknown,
 }
 
-/// Whether a to-do is still actionable.
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+impl<'input> FromJson<'input> for TodoActionName {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "assigned" => Self::Assigned,
+            "mentioned" => Self::Mentioned,
+            "build_failed" => Self::BuildFailed,
+            "marked" => Self::Marked,
+            "approval_required" => Self::ApprovalRequired,
+            "unmergeable" => Self::Unmergeable,
+            "directly_addressed" => Self::DirectlyAddressed,
+            "merge_train_removed" => Self::MergeTrainRemoved,
+            "review_requested" => Self::ReviewRequested,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for TodoActionName {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::Assigned => "assigned",
+            Self::Mentioned => "mentioned",
+            Self::BuildFailed => "build_failed",
+            Self::Marked => "marked",
+            Self::ApprovalRequired => "approval_required",
+            Self::Unmergeable => "unmergeable",
+            Self::DirectlyAddressed => "directly_addressed",
+            Self::MergeTrainRemoved => "merge_train_removed",
+            Self::ReviewRequested => "review_requested",
+            Self::Unknown => "unknown",
+        };
+        s.write_json(w)
+    }
+}
+
+/// Whether a to-do is still actionable. Unknown values fall back to
+/// [`TodoState::Unknown`].
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TodoState {
     Pending,
     Done,
+    Unknown,
+}
+
+impl<'input> FromJson<'input> for TodoState {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "pending" => Self::Pending,
+            "done" => Self::Done,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for TodoState {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::Pending => "pending",
+            Self::Done => "done",
+            Self::Unknown => "unknown",
+        };
+        s.write_json(w)
+    }
 }
 
 /// A lightweight project reference embedded in a to-do. The Todos endpoint
@@ -37,8 +101,9 @@ pub enum TodoState {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct TodoProject {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub name_with_namespace: Option<String>,
     pub path: Option<String>,
@@ -51,8 +116,9 @@ pub struct TodoProject {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Todo {
-    pub id: i64,
+    pub id: Id,
     pub project: Option<TodoProject>,
     pub author: Option<Author>,
     pub action_name: Option<TodoActionName>,

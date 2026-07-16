@@ -5,8 +5,35 @@
 //!
 //! Enums are used instead of stringly-typed fields wherever GitLab's values
 //! are a closed set (states, visibility, severity). Structs set
-//! `deny_unknown_fields = false` so GitLab adding a field never breaks
-//! parsing.
+//! `deny_unknown_fields = false` so GitLab adding a *field* never breaks
+//! parsing, and every closed-set enum carries an `Unknown` fallback variant
+//! so GitLab adding a *value* never breaks parsing either. Public structs and
+//! those enums are `#[non_exhaustive]`, so new fields/variants are additive.
+//!
+//! Object identifiers are the [`Id`] newtype (a transparent `i64`), never a
+//! bare integer — GitLab.com ids exceed `i32` range.
+//!
+//! # Example
+//!
+//! ```
+//! use gitlab_model::{GitlabUser, UserState, Id};
+//! use json_bourne::parse_str;
+//!
+//! let json = r#"{
+//!     "id": 42, "username": "alice", "name": "Alice", "state": "active",
+//!     "locked": false, "avatar_url": "", "web_url": ""
+//! }"#;
+//! let user: GitlabUser = parse_str(json).unwrap();
+//! assert_eq!(user.id, Id::new(42));
+//! assert_eq!(user.id, 42); // Id compares against i64
+//! assert_eq!(user.state, UserState::Active);
+//!
+//! // A state GitLab hasn't shipped yet parses to Unknown, it doesn't panic:
+//! let future = r#"{ "id": 1, "username": "x", "name": "X", "state": "hibernating",
+//!                   "locked": false, "avatar_url": "", "web_url": "" }"#;
+//! let u: GitlabUser = parse_str(future).unwrap();
+//! assert_eq!(u.state, UserState::Unknown);
+//! ```
 
 pub mod award_emoji;
 pub mod board;
@@ -18,6 +45,7 @@ pub mod deployment;
 pub mod epic;
 pub mod event;
 pub mod group;
+pub mod id;
 pub mod issue;
 pub mod issue_link;
 pub mod issue_statistics;
@@ -49,6 +77,7 @@ pub use deployment::*;
 pub use epic::*;
 pub use event::*;
 pub use group::*;
+pub use id::*;
 pub use issue::*;
 pub use issue_link::*;
 pub use issue_statistics::*;

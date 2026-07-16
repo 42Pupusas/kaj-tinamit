@@ -6,11 +6,14 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// A code/wiki search hit (`blobs` and `wiki_blobs` scopes). Returns the
 /// matching file, the matched line range, and a snippet of surrounding data.
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct SearchBlob {
     pub basename: Option<String>,
     /// Repository-relative path of the matching file.
@@ -20,11 +23,11 @@ pub struct SearchBlob {
     pub data: Option<String>,
     /// 1-based line where the snippet begins.
     pub startline: Option<i64>,
-    pub project_id: Option<i64>,
+    pub project_id: Option<Id>,
     /// The ref the match was found on.
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
-    pub id: Option<i64>,
+    pub id: Option<Id>,
 }
 
 #[cfg(test)]

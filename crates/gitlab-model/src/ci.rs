@@ -4,6 +4,7 @@
 //! exists for merge-request payloads. The types here are the fuller CI
 //! shapes, prefixed to avoid collision.
 
+use crate::Id;
 use json_bourne::{FromJson, Lexer, ToJson};
 
 /// A proptest strategy yielding `Option<f64>` restricted to finite values.
@@ -20,6 +21,7 @@ fn finite_opt_f64() -> impl proptest::strategy::Strategy<Value = Option<f64>> {
 /// on a status GitLab adds later.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[non_exhaustive]
 pub enum CiStatus {
     Created,
     WaitingForResource,
@@ -85,8 +87,9 @@ impl ToJson for CiStatus {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct CiUser {
-    pub id: i64,
+    pub id: Id,
     pub username: Option<String>,
     pub name: Option<String>,
     pub state: Option<String>,
@@ -98,11 +101,12 @@ pub struct CiUser {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct PipelineSummary {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
-    pub project_id: Option<i64>,
+    pub iid: Id,
+    pub project_id: Option<Id>,
     pub status: CiStatus,
     pub source: Option<String>,
     #[bourne(rename = "ref")]
@@ -120,11 +124,12 @@ pub struct PipelineSummary {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct PipelineDetail {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
-    pub project_id: Option<i64>,
+    pub iid: Id,
+    pub project_id: Option<Id>,
     pub name: Option<String>,
     pub sha: Option<String>,
     #[bourne(rename = "ref")]
@@ -156,6 +161,7 @@ pub struct PipelineDetail {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct PipelineVariable {
     pub key: String,
     pub value: String,
@@ -166,6 +172,7 @@ pub struct PipelineVariable {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct JobArtifact {
     pub file_type: Option<String>,
     #[bourne(default)]
@@ -178,6 +185,7 @@ pub struct JobArtifact {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ArtifactsFile {
     pub filename: Option<String>,
     #[bourne(default)]
@@ -188,6 +196,7 @@ pub struct ArtifactsFile {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct JobCommit {
     pub id: Option<String>,
     pub short_id: Option<String>,
@@ -202,9 +211,10 @@ pub struct JobCommit {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct JobPipeline {
-    pub id: i64,
-    pub project_id: Option<i64>,
+    pub id: Id,
+    pub project_id: Option<Id>,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
     pub sha: Option<String>,
@@ -215,8 +225,9 @@ pub struct JobPipeline {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct JobRunner {
-    pub id: i64,
+    pub id: Id,
     pub description: Option<String>,
     #[bourne(default)]
     pub active: bool,
@@ -232,8 +243,9 @@ pub struct JobRunner {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Job {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub stage: Option<String>,
     pub status: CiStatus,

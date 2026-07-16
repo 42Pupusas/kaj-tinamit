@@ -7,12 +7,15 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// The author of a note (includes `email`, exposed on note responses).
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct NoteAuthor {
-    pub id: i64,
+    pub id: Id,
     pub username: Option<String>,
     pub email: Option<String>,
     pub name: Option<String>,
@@ -31,18 +34,19 @@ pub struct NoteAuthor {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct GitlabNote {
-    pub id: i64,
+    pub id: Id,
     pub body: Option<String>,
     pub author: Option<NoteAuthor>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
     #[bourne(default)]
     pub system: bool,
-    pub noteable_id: Option<i64>,
-    pub noteable_iid: Option<i64>,
+    pub noteable_id: Option<Id>,
+    pub noteable_iid: Option<Id>,
     pub noteable_type: Option<String>,
-    pub project_id: Option<i64>,
+    pub project_id: Option<Id>,
     #[bourne(default)]
     pub resolvable: bool,
     pub resolved: Option<bool>,

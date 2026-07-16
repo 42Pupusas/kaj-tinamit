@@ -2,14 +2,40 @@
 
 use json_bourne::{FromJson, Lexer, ToJson};
 
+use crate::Id;
 use crate::user::UserState;
 
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// An issue's state. Unknown values fall back to [`IssueState::Unknown`] so
+/// parsing never fails on a state GitLab adds later.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum IssueState {
     Opened,
     Closed,
+    Unknown,
+}
+
+impl<'input> FromJson<'input> for IssueState {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "opened" => Self::Opened,
+            "closed" => Self::Closed,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for IssueState {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::Opened => "opened",
+            Self::Closed => "closed",
+            Self::Unknown => "unknown",
+        };
+        s.write_json(w)
+    }
 }
 
 /// Issue type. GitLab's REST API reports this in SCREAMING_SNAKE_CASE via
@@ -18,6 +44,7 @@ pub enum IssueState {
 /// for values GitLab may add later, so parsing never fails on a new kind.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[non_exhaustive]
 pub enum IssueType {
     Issue,
     Incident,
@@ -52,9 +79,12 @@ impl ToJson for IssueType {
     }
 }
 
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// Incident severity. GitLab reports these in UPPERCASE; `UNKNOWN` is itself
+/// a real GitLab value, and any other unrecognized value also maps to
+/// [`Severity::Unknown`] so parsing never fails.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "UPPERCASE")]
+#[non_exhaustive]
 pub enum Severity {
     Unknown,
     Low,
@@ -63,49 +93,102 @@ pub enum Severity {
     Critical,
 }
 
+impl<'input> FromJson<'input> for Severity {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "LOW" => Self::Low,
+            "MEDIUM" => Self::Medium,
+            "HIGH" => Self::High,
+            "CRITICAL" => Self::Critical,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for Severity {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::Unknown => "UNKNOWN",
+            Self::Low => "LOW",
+            Self::Medium => "MEDIUM",
+            Self::High => "HIGH",
+            Self::Critical => "CRITICAL",
+        };
+        s.write_json(w)
+    }
+}
+
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Author {
     pub state: Option<UserState>,
-    pub id: i32,
+    pub id: Id,
     pub web_url: Option<String>,
     pub name: Option<String>,
     pub avatar_url: Option<String>,
     pub username: Option<String>,
 }
 
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// A milestone's state. Unknown values fall back to [`MilestoneState::Unknown`].
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum MilestoneState {
     Active,
     Closed,
+    Unknown,
+}
+
+impl<'input> FromJson<'input> for MilestoneState {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "active" => Self::Active,
+            "closed" => Self::Closed,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for MilestoneState {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::Active => "active",
+            Self::Closed => "closed",
+            Self::Unknown => "unknown",
+        };
+        s.write_json(w)
+    }
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Milestone {
-    pub project_id: Option<i32>,
+    pub project_id: Option<Id>,
     pub description: Option<String>,
     pub state: Option<MilestoneState>,
     pub due_date: Option<String>,
     #[bourne(default)]
-    pub iid: i32,
+    pub iid: Id,
     pub created_at: Option<String>,
     pub title: Option<String>,
     #[bourne(default)]
-    pub id: i32,
+    pub id: Id,
     pub updated_at: Option<String>,
 }
 
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Assignee {
     pub state: Option<UserState>,
-    pub id: i32,
+    pub id: Id,
     pub name: Option<String>,
     pub web_url: Option<String>,
     pub avatar_url: Option<String>,
@@ -115,6 +198,7 @@ pub struct Assignee {
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct TimeStats {
     #[bourne(default)]
     pub time_estimate: i32,
@@ -127,6 +211,7 @@ pub struct TimeStats {
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct References {
     pub short: Option<String>,
     pub relative: Option<String>,
@@ -136,6 +221,7 @@ pub struct References {
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IssueLinks {
     #[bourne(rename = "self")]
     pub self_link: Option<String>,
@@ -148,6 +234,7 @@ pub struct IssueLinks {
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct TaskCompletionStatus {
     #[bourne(default)]
     pub count: i32,
@@ -158,12 +245,13 @@ pub struct TaskCompletionStatus {
 #[derive(FromJson, ToJson, Debug, PartialEq, PartialOrd, Ord, Eq, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct GitlabIssue {
     pub state: Option<IssueState>,
     pub description: Option<String>,
     pub author: Option<Author>,
     pub milestone: Option<Milestone>,
-    pub project_id: Option<i32>,
+    pub project_id: Option<Id>,
     #[bourne(default)]
     pub assignees: Vec<Assignee>,
     pub assignee: Option<Assignee>,
@@ -171,11 +259,11 @@ pub struct GitlabIssue {
     pub issue_type: Option<IssueType>,
     pub updated_at: Option<String>,
     pub closed_at: Option<String>,
-    pub id: i32,
+    pub id: Id,
     pub title: Option<String>,
     pub created_at: Option<String>,
-    pub moved_to_id: Option<i32>,
-    pub iid: i32,
+    pub moved_to_id: Option<Id>,
+    pub iid: Id,
     #[bourne(default)]
     pub labels: Vec<String>,
     #[bourne(default)]
@@ -200,7 +288,7 @@ pub struct GitlabIssue {
     pub discussion_locked: Option<bool>,
     pub severity: Option<Severity>,
     #[bourne(default, rename = "_links")]
-    pub _links: IssueLinks,
+    pub links: IssueLinks,
     #[bourne(default)]
     pub task_completion_status: TaskCompletionStatus,
 }

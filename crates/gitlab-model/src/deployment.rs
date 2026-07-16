@@ -2,13 +2,16 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// The user who created a deployment or triggered an environment (concise
 /// subset).
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct DeploymentUser {
-    pub id: i64,
+    pub id: Id,
     pub username: Option<String>,
     pub name: Option<String>,
     pub state: Option<String>,
@@ -20,6 +23,7 @@ pub struct DeploymentUser {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct DeployableCommit {
     pub id: Option<String>,
     pub short_id: Option<String>,
@@ -34,8 +38,9 @@ pub struct DeployableCommit {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct DeployablePipeline {
-    pub id: i64,
+    pub id: Id,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
     pub sha: Option<String>,
@@ -48,8 +53,9 @@ pub struct DeployablePipeline {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Deployable {
-    pub id: i64,
+    pub id: Id,
     pub status: Option<String>,
     pub stage: Option<String>,
     pub name: Option<String>,
@@ -69,8 +75,9 @@ pub struct Deployable {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct EnvironmentRef {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub external_url: Option<String>,
 }
@@ -79,10 +86,11 @@ pub struct EnvironmentRef {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Deployment {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
+    pub iid: Id,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
     pub sha: Option<String>,
@@ -100,10 +108,11 @@ pub struct Deployment {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct LastDeployment {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
+    pub iid: Id,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
     pub sha: Option<String>,
@@ -117,8 +126,9 @@ pub struct LastDeployment {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Environment {
-    pub id: i64,
+    pub id: Id,
     pub name: String,
     pub slug: Option<String>,
     pub description: Option<String>,

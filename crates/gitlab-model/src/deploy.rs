@@ -2,13 +2,16 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// A project reference embedded in an instance-level deploy key's
 /// access lists.
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct DeployKeyProject {
-    pub id: i64,
+    pub id: Id,
     pub description: Option<String>,
     pub name: Option<String>,
     pub name_with_namespace: Option<String>,
@@ -24,8 +27,9 @@ pub struct DeployKeyProject {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct DeployKey {
-    pub id: i64,
+    pub id: Id,
     pub title: Option<String>,
     pub key: Option<String>,
     pub fingerprint: Option<String>,
@@ -46,8 +50,9 @@ pub struct DeployKey {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct DeployToken {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub username: Option<String>,
     pub expires_at: Option<String>,
@@ -67,8 +72,9 @@ pub struct DeployToken {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct CreatedDeployToken {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub username: Option<String>,
     pub expires_at: Option<String>,

@@ -2,6 +2,7 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
 use crate::project::Visibility;
 
 /// Another group a group is shared with
@@ -9,8 +10,9 @@ use crate::project::Visibility;
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct SharedWithGroup {
-    pub group_id: i64,
+    pub group_id: Id,
     pub group_name: Option<String>,
     pub group_full_path: Option<String>,
     #[bourne(default)]
@@ -25,8 +27,9 @@ pub struct SharedWithGroup {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct GitlabGroup {
-    pub id: i64,
+    pub id: Id,
     pub name: String,
     pub path: String,
     pub description: Option<String>,
@@ -35,12 +38,12 @@ pub struct GitlabGroup {
     pub web_url: Option<String>,
     pub full_name: Option<String>,
     pub full_path: Option<String>,
-    pub parent_id: Option<i64>,
+    pub parent_id: Option<Id>,
     pub created_at: Option<String>,
     #[bourne(default)]
     pub request_access_enabled: bool,
     pub repository_storage: Option<String>,
-    pub file_template_project_id: Option<i64>,
+    pub file_template_project_id: Option<Id>,
     #[bourne(default)]
     pub shared_with_groups: Vec<SharedWithGroup>,
 }
@@ -50,8 +53,9 @@ pub struct GitlabGroup {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct MemberCreatedBy {
-    pub id: i64,
+    pub id: Id,
     pub username: Option<String>,
     pub name: Option<String>,
     pub web_url: Option<String>,
@@ -66,8 +70,9 @@ pub struct MemberCreatedBy {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Member {
-    pub id: i64,
+    pub id: Id,
     pub username: String,
     pub name: Option<String>,
     pub state: Option<String>,
@@ -87,6 +92,7 @@ pub struct Member {
 
 /// GitLab's named access levels, mapped from the numeric `access_level`.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[non_exhaustive]
 pub enum AccessLevel {
     /// 0 — no access.
     NoAccess,

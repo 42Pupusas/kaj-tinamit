@@ -32,7 +32,7 @@ fn current_user_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
     let me = client.current_user().expect("current_user request failed");
     eprintln!("authenticated as #{} @{} ({})", me.id, me.username, me.name);
-    assert!(me.id > 0);
+    assert!(me.id.get() > 0);
     assert!(!me.username.is_empty());
 }
 
@@ -92,7 +92,7 @@ fn project_scoped_smoke() {
     eprintln!("  merge requests: {}", mrs.len());
 
     let milestones = client
-        .project_milestones(project.id)
+        .project_milestones(i32::try_from(i64::from(project.id)).expect("project id fits i32"))
         .expect("project_milestones request failed");
     eprintln!("  milestones: {}", milestones.len());
 
@@ -119,7 +119,7 @@ fn deploy_keys_and_tokens_smoke() {
         {
             eprintln!("project #{pid} deploy keys: {}", keys.len());
             let one = client
-                .project_deploy_key(pid, first.id)
+                .project_deploy_key(pid, first.id.into())
                 .expect("project_deploy_key failed");
             assert_eq!(one.id, first.id);
             key_hit = true;
@@ -170,7 +170,7 @@ fn notes_smoke() {
                 first.noteable_type
             );
             let one = client
-                .issue_note(i64::from(pid), i64::from(issue.iid), first.id)
+                .issue_note(i64::from(pid), i64::from(issue.iid), first.id.into())
                 .expect("issue_note failed");
             assert_eq!(one.id, first.id);
             found = true;
@@ -202,7 +202,7 @@ fn runners_smoke() {
     }
 
     if let Some(first) = runners.first() {
-        let detail = client.runner(first.id).expect("runner detail failed");
+        let detail = client.runner(first.id.into()).expect("runner detail failed");
         assert_eq!(detail.id, first.id);
         eprintln!(
             "  runner {} type {:?}, {} projects, tags {:?}",
@@ -212,7 +212,7 @@ fn runners_smoke() {
             detail.tag_list
         );
         let managers = client
-            .runner_managers(first.id)
+            .runner_managers(first.id.into())
             .expect("runner_managers failed");
         eprintln!("  managers: {}", managers.len());
     }
@@ -250,7 +250,7 @@ fn environments_and_deployments_smoke() {
                 first.name
             );
             let one = client
-                .environment(pid, first.id)
+                .environment(pid, first.id.into())
                 .expect("environment failed");
             assert_eq!(one.id, first.id);
             env_hit = true;
@@ -266,7 +266,7 @@ fn environments_and_deployments_smoke() {
                 deps.len(),
                 first.id
             );
-            let one = client.deployment(pid, first.id).expect("deployment failed");
+            let one = client.deployment(pid, first.id.into()).expect("deployment failed");
             assert_eq!(one.id, first.id);
             dep_hit = true;
         }
@@ -297,9 +297,9 @@ fn snippets_smoke() {
         eprintln!("  #{} {}", s.id, s.title.as_deref().unwrap_or("<untitled>"));
     }
     if let Some(first) = mine.first() {
-        let one = client.snippet(first.id).expect("snippet request failed");
+        let one = client.snippet(first.id.into()).expect("snippet request failed");
         assert_eq!(one.id, first.id);
-        let raw = client.snippet_raw(first.id).expect("snippet_raw failed");
+        let raw = client.snippet_raw(first.id.into()).expect("snippet_raw failed");
         eprintln!("  snippet {} raw: {} chars", first.id, raw.len());
     }
 
@@ -363,7 +363,7 @@ fn ci_smoke() {
         if let Ok(pipes) = client.pipelines(pid, &gitlab_client::PipelineQuery::new())
             && let Some(first) = pipes.first()
         {
-            found = Some((pid, p, first.id));
+            found = Some((pid, p, i64::from(first.id)));
             break;
         }
     }
@@ -401,9 +401,9 @@ fn ci_smoke() {
 
     // Job trace for the first job (may be empty/expired but must not error).
     if let Some(job) = jobs.first() {
-        let one = client.job(pid, job.id).expect("job failed");
+        let one = client.job(pid, job.id.into()).expect("job failed");
         assert_eq!(one.id, job.id);
-        let trace = client.job_trace(pid, job.id).expect("job_trace failed");
+        let trace = client.job_trace(pid, job.id.into()).expect("job_trace failed");
         eprintln!("  job {} trace: {} chars", job.id, trace.len());
     }
 }
@@ -417,7 +417,7 @@ fn labels_smoke() {
 
     if let Some(group) = client.groups().expect("groups failed").first() {
         let labels = client
-            .group_labels(group.id, true)
+            .group_labels(group.id.into(), true)
             .expect("group_labels failed");
         eprintln!("group #{} labels: {}", group.id, labels.len());
         for l in labels.iter().take(5) {
@@ -428,7 +428,7 @@ fn labels_smoke() {
         }
         if let Some(first) = labels.first() {
             let one = client
-                .group_label(group.id, &first.name)
+                .group_label(group.id.into(), &first.name)
                 .expect("group_label failed");
             assert_eq!(one.name, first.name);
         }
@@ -463,7 +463,7 @@ fn groups_and_members_smoke() {
         eprintln!("no groups visible - skipping detail checks");
         return;
     };
-    let gid = group.id;
+    let gid = i64::from(group.id);
 
     let one = client.group(gid).expect("group request failed");
     assert_eq!(one.id, gid);
@@ -488,7 +488,7 @@ fn groups_and_members_smoke() {
     // If the group has a direct member, round-trip a single fetch.
     if let Some(first) = members.first() {
         let single = client
-            .group_member(gid, first.id)
+            .group_member(gid, first.id.into())
             .expect("group_member failed");
         assert_eq!(single.id, first.id);
     }
@@ -666,7 +666,10 @@ fn issues_statistics_smoke() {
 
     if let Some(project) = client.projects().expect("projects failed").first() {
         let pstats = client
-            .project_issues_statistics(project.id, &IssueQuery::new())
+            .project_issues_statistics(
+                i32::try_from(i64::from(project.id)).expect("project id fits i32"),
+                &IssueQuery::new(),
+            )
             .expect("project_issues_statistics failed");
         let pc = pstats.counts();
         eprintln!(
@@ -684,7 +687,7 @@ fn iterations_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
 
     if let Some(group) = client.groups().expect("groups failed").first() {
-        match client.group_iterations(group.id) {
+        match client.group_iterations(group.id.into()) {
             Ok(iters) => {
                 eprintln!("group #{} iterations: {}", group.id, iters.len());
                 for it in iters.iter().take(5) {
@@ -700,7 +703,7 @@ fn iterations_smoke() {
             }
             Err(e) => eprintln!("group iterations not accessible: {e}"),
         }
-        match client.group_iteration_cadences(group.id) {
+        match client.group_iteration_cadences(group.id.into()) {
             Ok(cadences) => eprintln!("group #{} cadences: {}", group.id, cadences.len()),
             Err(e) => eprintln!("group cadences not accessible: {e}"),
         }
@@ -726,11 +729,11 @@ fn boards_smoke() {
         eprintln!("project #{pid} boards: {}", boards.len());
         if let Some(first) = boards.first() {
             let one = client
-                .project_board(pid, first.id)
+                .project_board(pid, first.id.into())
                 .expect("project_board failed");
             assert_eq!(one.id, first.id);
             let lists = client
-                .project_board_lists(pid, first.id)
+                .project_board_lists(pid, first.id.into())
                 .expect("project_board_lists failed");
             eprintln!("  board {} lists: {}", first.id, lists.len());
             for l in lists.iter().take(5) {
@@ -744,7 +747,7 @@ fn boards_smoke() {
     }
 
     if let Some(group) = client.groups().expect("groups failed").first() {
-        match client.group_boards(group.id) {
+        match client.group_boards(group.id.into()) {
             Ok(boards) => eprintln!("group #{} boards: {}", group.id, boards.len()),
             Err(e) => eprintln!("group boards not accessible: {e}"),
         }
@@ -762,18 +765,20 @@ fn epics_smoke() {
         eprintln!("no groups visible - skipping epics");
         return;
     };
-    match client.group_epics(group.id) {
+    let gid = i64::from(group.id);
+    match client.group_epics(gid) {
         Ok(epics) => {
-            eprintln!("group #{} epics: {}", group.id, epics.len());
+            eprintln!("group #{} epics: {}", gid, epics.len());
             if let Some(first) = epics.first() {
-                let one = client.epic(group.id, first.iid).expect("epic failed");
+                let eiid = i64::from(first.iid);
+                let one = client.epic(gid, eiid).expect("epic failed");
                 assert_eq!(one.iid, first.iid);
                 let issues = client
-                    .epic_issues(group.id, first.iid)
+                    .epic_issues(gid, eiid)
                     .expect("epic_issues failed");
                 eprintln!("  epic {} issues: {}", first.iid, issues.len());
                 let children = client
-                    .epic_children(group.id, first.iid)
+                    .epic_children(gid, eiid)
                     .expect("epic_children failed");
                 eprintln!("  epic {} children: {}", first.iid, children.len());
             }
@@ -925,7 +930,7 @@ fn pipeline_schedules_smoke() {
         if let Some(first) = schedules.first() {
             eprintln!("project #{pid} pipeline schedules: {}", schedules.len());
             let one = client
-                .pipeline_schedule(pid, first.id)
+                .pipeline_schedule(pid, first.id.into())
                 .expect("pipeline_schedule failed");
             assert_eq!(one.id, first.id);
             eprintln!(
@@ -1018,17 +1023,18 @@ fn group_releases_and_wikis_smoke() {
         return;
     };
 
-    match client.group_releases(group.id) {
-        Ok(rels) => eprintln!("group #{} releases: {}", group.id, rels.len()),
+    let gid = i64::from(group.id);
+    match client.group_releases(gid) {
+        Ok(rels) => eprintln!("group #{} releases: {}", gid, rels.len()),
         Err(e) => eprintln!("group releases not accessible: {e}"),
     }
 
-    match client.group_wiki_pages(group.id) {
+    match client.group_wiki_pages(gid) {
         Ok(pages) => {
-            eprintln!("group #{} wiki pages: {}", group.id, pages.len());
+            eprintln!("group #{} wiki pages: {}", gid, pages.len());
             if let Some(first) = pages.first() {
                 let one = client
-                    .group_wiki_page(group.id, &first.slug)
+                    .group_wiki_page(gid, &first.slug)
                     .expect("group_wiki_page failed");
                 eprintln!("  wiki '{}' fetched", one.title);
             }
@@ -1068,7 +1074,7 @@ fn write_issue_lifecycle() {
     eprintln!("  added note #{}", note.id);
 
     client
-        .update_issue_note(pid, iid, note.id, "Edited comment.")
+        .update_issue_note(pid, iid, note.id.into(), "Edited comment.")
         .expect("update_issue_note failed");
 
     let award = client
@@ -1076,13 +1082,13 @@ fn write_issue_lifecycle() {
         .expect("award_issue_emoji failed");
     eprintln!("  reacted :{}:", award.name.as_deref().unwrap_or("?"));
     client
-        .remove_issue_award_emoji(pid, iid, award.id)
+        .remove_issue_award_emoji(pid, iid, award.id.into())
         .expect("remove_issue_award_emoji failed");
 
     let updated = client
         .update_issue(
             pid32,
-            created.iid,
+            i32::try_from(i64::from(created.iid)).expect("issue iid fits i32"),
             &UpdateIssue::new()
                 .with_title("[kaj-tinamit] write smoke test (edited)")
                 .close(),
@@ -1090,10 +1096,10 @@ fn write_issue_lifecycle() {
         .expect("update_issue failed");
     eprintln!("  updated + closed: state {:?}", updated.state);
 
-    client.delete_issue_note(pid, iid, note.id).ok();
+    client.delete_issue_note(pid, iid, note.id.into()).ok();
     // Deleting an issue requires the Owner role; tolerate a 403 when the
     // test token lacks it (the issue is already closed above).
-    match client.delete_issue(pid32, created.iid) {
+    match client.delete_issue(pid32, i32::try_from(i64::from(created.iid)).expect("issue iid fits i32")) {
         Ok(()) => eprintln!("  deleted issue !{}", created.iid),
         Err(e) => eprintln!("  delete_issue skipped (needs Owner): {e}"),
     }
@@ -1199,7 +1205,7 @@ fn write_environment_lifecycle() {
     let updated = client
         .update_environment(
             pid,
-            created.id,
+            created.id.into(),
             &UpdateEnvironment::new().with_description("edited by the write test"),
         )
         .expect("update_environment failed");
@@ -1210,12 +1216,12 @@ fn write_environment_lifecycle() {
 
     // Stopping is a prerequisite for deletion.
     client
-        .stop_environment(pid, created.id)
+        .stop_environment(pid, created.id.into())
         .expect("stop_environment failed");
     eprintln!("  stopped environment {}", created.id);
 
     client
-        .delete_environment(pid, created.id)
+        .delete_environment(pid, created.id.into())
         .expect("delete_environment failed");
     eprintln!("  deleted environment {}", created.id);
 }

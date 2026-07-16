@@ -2,12 +2,15 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// The author of a release (concise user subset).
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseAuthor {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub username: Option<String>,
     pub state: Option<String>,
@@ -19,6 +22,7 @@ pub struct ReleaseAuthor {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseCommit {
     pub id: String,
     pub short_id: Option<String>,
@@ -35,6 +39,7 @@ pub struct ReleaseCommit {
 #[derive(Debug, FromJson, ToJson, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct MilestoneIssueStats {
     #[bourne(default)]
     pub total: i64,
@@ -50,11 +55,12 @@ pub struct MilestoneIssueStats {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseMilestone {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
-    pub project_id: Option<i64>,
+    pub iid: Id,
+    pub project_id: Option<Id>,
     pub title: Option<String>,
     pub description: Option<String>,
     pub state: Option<String>,
@@ -70,6 +76,7 @@ pub struct ReleaseMilestone {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseSource {
     pub format: String,
     pub url: String,
@@ -79,8 +86,9 @@ pub struct ReleaseSource {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseLink {
-    pub id: i64,
+    pub id: Id,
     pub name: String,
     pub url: String,
     pub direct_asset_url: Option<String>,
@@ -91,6 +99,7 @@ pub struct ReleaseLink {
 #[derive(Debug, FromJson, ToJson, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseAssets {
     #[bourne(default)]
     pub count: i64,
@@ -104,6 +113,7 @@ pub struct ReleaseAssets {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct ReleaseEvidence {
     pub sha: Option<String>,
     pub filepath: Option<String>,
@@ -114,6 +124,7 @@ pub struct ReleaseEvidence {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Release {
     pub tag_name: String,
     pub name: Option<String>,

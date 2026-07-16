@@ -3,14 +3,16 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
 use crate::issue::Author;
 
 /// An emoji reaction awarded to an issue, MR, snippet, or note.
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct AwardEmoji {
-    pub id: i64,
+    pub id: Id,
     /// The emoji name, e.g. `thumbsup`, `rocket`.
     pub name: Option<String>,
     pub user: Option<Author>,
@@ -18,7 +20,7 @@ pub struct AwardEmoji {
     pub updated_at: Option<String>,
     /// The awardable's type (`Issue`, `MergeRequest`, `Snippet`, `Note`).
     pub awardable_type: Option<String>,
-    pub awardable_id: Option<i64>,
+    pub awardable_id: Option<Id>,
 }
 
 #[cfg(test)]

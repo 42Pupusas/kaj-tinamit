@@ -6,6 +6,7 @@ use json_bourne::{FromJson, Lexer, ToJson};
 /// The kind of a repository tree entry.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[non_exhaustive]
 pub enum TreeEntryType {
     /// A directory.
     Tree,
@@ -46,6 +47,7 @@ impl ToJson for TreeEntryType {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct TreeEntry {
     pub id: String,
     pub name: String,
@@ -60,6 +62,7 @@ pub struct TreeEntry {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Blob {
     pub size: i64,
     pub encoding: String,
@@ -73,6 +76,7 @@ pub struct Blob {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Contributor {
     pub name: String,
     pub email: String,
@@ -90,6 +94,7 @@ pub struct Contributor {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct RefCommit {
     pub id: String,
     pub short_id: String,
@@ -112,6 +117,7 @@ pub struct RefCommit {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Branch {
     pub name: String,
     #[bourne(default)]
@@ -134,6 +140,7 @@ pub struct Branch {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct TagRelease {
     pub tag_name: Option<String>,
     pub description: Option<String>,
@@ -144,6 +151,7 @@ pub struct TagRelease {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Tag {
     pub name: String,
     pub message: Option<String>,
@@ -160,6 +168,7 @@ pub struct Tag {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct RepositoryFile {
     pub file_name: String,
     pub file_path: String,
@@ -184,6 +193,7 @@ pub struct RepositoryFile {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct FileMutationResult {
     pub file_path: String,
     pub branch: String,
@@ -194,6 +204,7 @@ pub struct FileMutationResult {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct BlameCommit {
     pub id: String,
     pub message: Option<String>,
@@ -212,6 +223,7 @@ pub struct BlameCommit {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct BlameRange {
     pub commit: BlameCommit,
     #[bourne(default)]
@@ -223,6 +235,7 @@ pub struct BlameRange {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Changelog {
     /// Generated changelog in Markdown format.
     pub notes: String,

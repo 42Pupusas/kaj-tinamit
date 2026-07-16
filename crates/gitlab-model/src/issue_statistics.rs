@@ -8,6 +8,7 @@ use json_bourne::{FromJson, ToJson};
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IssueCounts {
     #[bourne(default)]
     pub all: i64,
@@ -21,6 +22,7 @@ pub struct IssueCounts {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IssueStatisticsInner {
     #[bourne(default)]
     pub counts: IssueCounts,
@@ -30,6 +32,7 @@ pub struct IssueStatisticsInner {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IssueStatistics {
     #[bourne(default)]
     pub statistics: IssueStatisticsInner,

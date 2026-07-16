@@ -2,31 +2,57 @@
 //! issues and other epics into a portfolio/roadmap hierarchy. Premium-tier
 //! on GitLab.com, but the wire shape is stable.
 
-use json_bourne::{FromJson, ToJson};
+use json_bourne::{FromJson, Lexer, ToJson};
 
+use crate::Id;
 use crate::issue::Author;
 
-/// Epic lifecycle state.
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// Epic lifecycle state. Unknown values fall back to [`EpicState::Unknown`]
+/// so parsing never fails on a state GitLab adds later.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum EpicState {
     Opened,
     Closed,
+    Unknown,
+}
+
+impl<'input> FromJson<'input> for EpicState {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "opened" => Self::Opened,
+            "closed" => Self::Closed,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for EpicState {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::Opened => "opened",
+            Self::Closed => "closed",
+            Self::Unknown => "unknown",
+        };
+        s.write_json(w)
+    }
 }
 
 /// A group epic.
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Epic {
-    pub id: i64,
+    pub id: Id,
     /// Group-scoped id used by most epic sub-endpoints.
     #[bourne(default)]
-    pub iid: i64,
-    pub group_id: Option<i64>,
+    pub iid: Id,
+    pub group_id: Option<Id>,
     /// The parent epic's id, when this epic is nested.
-    pub parent_id: Option<i64>,
+    pub parent_id: Option<Id>,
     pub title: Option<String>,
     pub description: Option<String>,
     pub state: Option<EpicState>,
@@ -58,16 +84,17 @@ pub struct Epic {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct EpicIssue {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
-    pub project_id: Option<i64>,
+    pub iid: Id,
+    pub project_id: Option<Id>,
     pub title: Option<String>,
     pub state: Option<String>,
     /// Id of the epic-issue link itself (not the issue) — needed to address
     /// the membership.
-    pub epic_issue_id: Option<i64>,
+    pub epic_issue_id: Option<Id>,
     pub relative_position: Option<i64>,
     pub web_url: Option<String>,
 }

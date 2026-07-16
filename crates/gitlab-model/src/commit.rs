@@ -6,6 +6,7 @@ use json_bourne::{FromJson, ToJson};
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct GitlabCommit {
     pub id: String,
     pub short_id: String,
@@ -27,6 +28,7 @@ pub struct GitlabCommit {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct CommitDiff {
     pub old_path: String,
     pub new_path: String,
@@ -42,6 +44,7 @@ pub struct CommitDiff {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct CommitWithDiffs {
     pub id: String,
     pub short_id: String,
@@ -64,6 +67,7 @@ pub struct CommitWithDiffs {
 #[derive(Debug, FromJson, ToJson, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct CommitStats {
     #[bourne(default)]
     pub additions: i32,

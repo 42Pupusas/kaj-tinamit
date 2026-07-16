@@ -2,19 +2,46 @@
 //! between issues (`relates_to`, `blocks`, `is_blocked_by`). Essential for
 //! surfacing cross-story dependencies during planning.
 
-use json_bourne::{FromJson, ToJson};
+use json_bourne::{FromJson, Lexer, ToJson};
 
+use crate::Id;
 use crate::issue::GitlabIssue;
 
 /// The kind of relationship a link expresses, from the perspective of the
-/// issue the listing was requested for.
-#[derive(Debug, FromJson, ToJson, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// issue the listing was requested for. Unknown values fall back to
+/// [`IssueLinkType::Unknown`].
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-#[bourne(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum IssueLinkType {
     RelatesTo,
     Blocks,
     IsBlockedBy,
+    Unknown,
+}
+
+impl<'input> FromJson<'input> for IssueLinkType {
+    fn from_lex(lex: &mut Lexer<'input>) -> Result<Self, json_bourne::Error> {
+        let s = String::from_lex(lex)?;
+        Ok(match s.as_str() {
+            "relates_to" => Self::RelatesTo,
+            "blocks" => Self::Blocks,
+            "is_blocked_by" => Self::IsBlockedBy,
+            _ => Self::Unknown,
+        })
+    }
+}
+
+impl ToJson for IssueLinkType {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        let s = match self {
+            Self::RelatesTo => "relates_to",
+            Self::Blocks => "blocks",
+            Self::IsBlockedBy => "is_blocked_by",
+            Self::Unknown => "unknown",
+        };
+        s.write_json(w)
+    }
 }
 
 /// A linked issue as returned by `GET /projects/:id/issues/:iid/links`.
@@ -25,17 +52,18 @@ pub enum IssueLinkType {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IssueLink {
-    pub id: i64,
+    pub id: Id,
     #[bourne(default)]
-    pub iid: i64,
-    pub project_id: Option<i64>,
+    pub iid: Id,
+    pub project_id: Option<Id>,
     pub title: Option<String>,
     pub state: Option<String>,
     #[bourne(default)]
     pub labels: Vec<String>,
     /// Id of the link row itself — address it to inspect/remove the link.
-    pub issue_link_id: Option<i64>,
+    pub issue_link_id: Option<Id>,
     /// How the *target* issue relates to the source issue.
     pub link_type: Option<IssueLinkType>,
     pub link_created_at: Option<String>,
@@ -51,6 +79,7 @@ pub struct IssueLink {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct IssueLinkResult {
     pub source_issue: GitlabIssue,
     pub target_issue: GitlabIssue,
@@ -76,6 +105,6 @@ mod tests {
         let l: IssueLink = parse_str(json).unwrap();
         assert_eq!(l.iid, 14);
         assert_eq!(l.link_type, Some(IssueLinkType::IsBlockedBy));
-        assert_eq!(l.issue_link_id, Some(2));
+        assert_eq!(l.issue_link_id, Some(Id::new(2)));
     }
 }

@@ -4,6 +4,7 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
 use crate::issue::Milestone;
 use crate::label::Label;
 
@@ -13,8 +14,9 @@ use crate::label::Label;
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct BoardList {
-    pub id: i64,
+    pub id: Id,
     /// Column ordering, left to right (1-based). Absent for backlog/closed.
     pub position: Option<i64>,
     pub list_type: Option<String>,
@@ -31,8 +33,9 @@ pub struct BoardList {
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Board {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     #[bourne(default)]
     pub hide_backlog_list: bool,

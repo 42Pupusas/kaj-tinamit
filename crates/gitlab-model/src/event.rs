@@ -2,6 +2,8 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// A GitLab activity event (push, merge request, comment, issue action, …).
 ///
 /// Returned by the events API. The fields here are the stable subset most
@@ -9,9 +11,10 @@ use json_bourne::{FromJson, ToJson};
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct GitlabEvent {
     /// Numeric event id.
-    pub id: Option<i64>,
+    pub id: Option<Id>,
     /// Human action name, e.g. `pushed to`, `opened`, `commented on`.
     pub action_name: Option<String>,
     /// Kind of the thing acted on, e.g. `Issue`, `MergeRequest`, `Note`.
@@ -28,8 +31,9 @@ pub struct GitlabEvent {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct EventAuthor {
-    pub id: Option<i32>,
+    pub id: Option<Id>,
     pub username: Option<String>,
     pub name: Option<String>,
 }

@@ -3,14 +3,16 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
 use crate::ci::CiUser;
 
 /// The most recent pipeline a schedule triggered (concise subset).
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct SchedulePipeline {
-    pub id: i64,
+    pub id: Id,
     pub sha: Option<String>,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
@@ -22,8 +24,9 @@ pub struct SchedulePipeline {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct PipelineSchedule {
-    pub id: i64,
+    pub id: Id,
     pub description: Option<String>,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,

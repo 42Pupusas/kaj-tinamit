@@ -2,12 +2,15 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// A CI runner as returned by the list endpoints (concise shape).
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Runner {
-    pub id: i64,
+    pub id: Id,
     pub description: Option<String>,
     #[bourne(default)]
     pub active: bool,
@@ -28,8 +31,9 @@ pub struct Runner {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct RunnerProject {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub name_with_namespace: Option<String>,
     pub path: Option<String>,
@@ -41,8 +45,9 @@ pub struct RunnerProject {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct RunnerDetail {
-    pub id: i64,
+    pub id: Id,
     pub description: Option<String>,
     #[bourne(default)]
     pub active: bool,
@@ -70,8 +75,9 @@ pub struct RunnerDetail {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct RunnerManager {
-    pub id: i64,
+    pub id: Id,
     pub system_id: Option<String>,
     pub version: Option<String>,
     pub revision: Option<String>,
@@ -89,6 +95,7 @@ pub struct RunnerManager {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct RunnerAuthToken {
     pub token: String,
     pub token_expires_at: Option<String>,

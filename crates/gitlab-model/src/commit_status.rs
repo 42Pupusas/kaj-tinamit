@@ -3,6 +3,7 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
 use crate::ci::{CiStatus, CiUser};
 
 /// A proptest strategy yielding `Option<f64>` restricted to finite values.
@@ -19,8 +20,9 @@ fn finite_opt_f64() -> impl proptest::strategy::Strategy<Value = Option<f64>> {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct CommitStatus {
-    pub id: i64,
+    pub id: Id,
     pub sha: Option<String>,
     #[bourne(rename = "ref")]
     pub ref_name: Option<String>,
@@ -35,7 +37,7 @@ pub struct CommitStatus {
     pub allow_failure: bool,
     #[cfg_attr(feature = "proptest", proptest(strategy = "finite_opt_f64()"))]
     pub coverage: Option<f64>,
-    pub pipeline_id: Option<i64>,
+    pub pipeline_id: Option<Id>,
     pub author: Option<CiUser>,
 }
 

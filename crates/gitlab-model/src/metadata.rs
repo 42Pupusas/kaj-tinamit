@@ -3,10 +3,13 @@
 
 use json_bourne::{FromJson, ToJson};
 
+use crate::Id;
+
 /// Details of the KAS (Kubernetes Agent Server), part of `/metadata`.
 #[derive(Debug, FromJson, ToJson, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct KasMetadata {
     #[bourne(default)]
     pub enabled: bool,
@@ -18,6 +21,7 @@ pub struct KasMetadata {
 #[derive(Debug, FromJson, ToJson, Clone, Default)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct Metadata {
     pub version: Option<String>,
     pub revision: Option<String>,
@@ -33,13 +37,14 @@ pub struct Metadata {
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
 pub struct NamespaceListing {
-    pub id: i64,
+    pub id: Id,
     pub name: Option<String>,
     pub path: Option<String>,
     pub kind: Option<String>,
     pub full_path: Option<String>,
-    pub parent_id: Option<i64>,
+    pub parent_id: Option<Id>,
     pub avatar_url: Option<String>,
     pub web_url: Option<String>,
     pub billable_members_count: Option<i64>,

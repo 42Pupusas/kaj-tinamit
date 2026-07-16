@@ -5,13 +5,17 @@
 //! regressions in `json-bourne` and in our derive usage.
 
 use gitlab_model::{
-    AwardEmoji, Blob, Board, Branch, CommitStatus, CommitWithDiffs, Contributor, DeployKey,
-    DeployToken, Deployment, Discussion, Environment, Epic, GitlabCommit, GitlabEvent, GitlabGroup,
-    GitlabIssue, GitlabNote, GitlabProject, GitlabUser, IssueStatistics, Iteration, Job, Label,
-    Member, MergeRequest, MergeRequestChanges, Metadata, Milestone, NamespaceListing,
-    PipelineDetail, PipelineSchedule, PipelineSummary, PipelineVariable, ProtectedBranch, Release,
-    RepositoryFile, ResourceLabelEvent, Runner, RunnerDetail, SearchBlob, Snippet, Tag, Todo,
-    TreeEntry, WikiPage, WikiPageList,
+    AwardEmoji, Blob, BlameRange, Board, BoardList, Branch, Changelog, CommitStatus,
+    CommitWithDiffs, Contributor, CreatedDeployToken, DeployKey, DeployToken, Deployment,
+    Discussion, Environment,
+    Epic, EpicIssue, FileMutationResult, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue,
+    GitlabNote, GitlabProject, GitlabUser, IssueLink, IssueLinkResult, IssueStatistics, Iteration,
+    IterationCadence, Job, Label, Member, MergeRequest, MergeRequestApprovals,
+    MergeRequestChanges, Metadata, Milestone, NamespaceListing, PipelineDetail, PipelineSchedule,
+    PipelineSummary, PipelineVariable, ProtectedBranch, ProtectedEnvironment, ProtectedTag,
+    RefCommit, Release, RepositoryFile, ResourceLabelEvent, ResourceMilestoneEvent,
+    ResourceStateEvent, Runner, RunnerAuthToken, RunnerDetail, RunnerManager, SearchBlob, Snippet,
+    SnippetUserAgentDetail, Tag, Todo, TreeEntry, WikiPage, WikiPageList,
 };
 use json_bourne::parse_str;
 
@@ -444,6 +448,139 @@ bench_parse!(
     r##"{"id":142,"created_at":"2021-01-02T09:00:00Z","resource_type":"Issue","resource_id":11,
     "user":{"id":2,"username":"alice","name":"Alice","state":"active"},
     "label":{"id":5,"name":"Doing","color":"#cc0033"},"action":"add"}"##
+);
+
+bench_parse!(
+    resource_state_event,
+    ResourceStateEvent,
+    r#"{"id":200,"created_at":"2021-01-05T12:00:00Z","resource_type":"Issue","resource_id":11,
+    "state":"closed"}"#
+);
+
+bench_parse!(
+    resource_milestone_event,
+    ResourceMilestoneEvent,
+    r#"{"id":201,"created_at":"2021-01-05T12:00:00Z","resource_type":"Issue","resource_id":11,
+    "action":"add","milestone":{"id":12,"iid":3,"project_id":7,"title":"v1.0","state":"active"}}"#
+);
+
+bench_parse!(
+    issue_link,
+    IssueLink,
+    r#"{"id":84,"iid":14,"project_id":4,"title":"Login flow","state":"opened",
+    "issue_link_id":2,"link_type":"is_blocked_by"}"#
+);
+
+bench_parse!(
+    issue_link_result,
+    IssueLinkResult,
+    r#"{"source_issue":{"id":1,"iid":7,"title":"A","state":"opened"},
+    "target_issue":{"id":2,"iid":8,"title":"B","state":"opened"},"link_type":"relates_to"}"#
+);
+
+bench_parse!(
+    epic_issue,
+    EpicIssue,
+    r#"{"id":1,"iid":7,"project_id":3,"title":"Something","state":"opened",
+    "epic_issue_id":9,"relative_position":1000}"#
+);
+
+bench_parse!(
+    protected_tag,
+    ProtectedTag,
+    r#"{"name":"v1.0.0","create_access_levels":[{"access_level":40,
+    "access_level_description":"Maintainers"}]}"#
+);
+
+bench_parse!(
+    protected_environment,
+    ProtectedEnvironment,
+    r#"{"name":"production","deploy_access_levels":[{"access_level":40,
+    "access_level_description":"Maintainers"}],"required_approval_count":1}"#
+);
+
+bench_parse!(
+    runner_manager,
+    RunnerManager,
+    r#"{"id":1,"system_id":"s_abc","version":"16.0.0","revision":"abcdef",
+    "platform":"linux","architecture":"amd64","created_at":"2022-01-01T00:00:00Z",
+    "contacted_at":"2022-01-02T00:00:00Z","ip_address":"1.2.3.4","status":"online",
+    "job_execution_status":"idle"}"#
+);
+
+bench_parse!(
+    runner_auth_token,
+    RunnerAuthToken,
+    r#"{"token":"glrt-abcdef1234567890","token_expires_at":null}"#
+);
+
+bench_parse!(
+    created_deploy_token,
+    CreatedDeployToken,
+    r#"{"id":1,"name":"MyToken","username":"gitlab+deploy-token-1",
+    "expires_at":"2020-02-14T00:00:00.000Z","revoked":false,"expired":false,
+    "scopes":["read_repository"],"token":"gldt-abcdef1234567890"}"#
+);
+
+bench_parse!(
+    changelog,
+    Changelog,
+    "{\"notes\":\"## v1.0.0\\n\\n- Initial release\"}"
+);
+
+bench_parse!(
+    ref_commit,
+    RefCommit,
+    r#"{"id":"7b5c3cc8","short_id":"7b5c3cc","title":"Merge branch",
+    "message":"Merge branch 'x'","author_name":"Alice","author_email":"alice@example.com",
+    "authored_date":"2022-01-01T00:00:00Z","committer_name":"Alice",
+    "committer_email":"alice@example.com","committed_date":"2022-01-01T00:00:00Z",
+    "parent_ids":["a1b2c3","d4e5f6"]}"#
+);
+
+bench_parse!(
+    blame_range,
+    BlameRange,
+    r#"{"commit":{"id":"7b5c3cc8","message":"Fix","parent_ids":["a1b2c3"],
+    "authored_date":"2022-01-01T00:00:00Z","author_name":"Alice",
+    "author_email":"alice@example.com","committed_date":"2022-01-01T00:00:00Z",
+    "committer_name":"Alice","committer_email":"alice@example.com"},
+    "lines":["fn main() {","    println!(\"hi\");","}"]}"#
+);
+
+bench_parse!(
+    file_mutation_result,
+    FileMutationResult,
+    r#"{"file_path":"app/models/key.rb","branch":"main"}"#
+);
+
+bench_parse!(
+    merge_request_approvals,
+    MergeRequestApprovals,
+    r#"{"approvals_required":2,"approvals_left":1,"approved_by":[
+    {"user":{"id":1,"username":"alice","name":"Alice","avatar_url":null}}]}"#
+);
+
+bench_parse!(
+    snippet_user_agent_detail,
+    SnippetUserAgentDetail,
+    r#"{"user_agent":"Mozilla/5.0","ip_address":"1.2.3.4","akismet_submitted":false}"#
+);
+
+bench_parse!(
+    iteration_cadence,
+    IterationCadence,
+    r#"{"id":3,"title":"Team A cadence","description":"Bi-weekly","active":true,
+    "automatic":true,"start_date":"2022-01-01","duration_in_weeks":2,
+    "iterations_in_advance":2,"roll_over":false,"created_at":"2021-12-01T00:00:00Z",
+    "updated_at":"2021-12-01T00:00:00Z"}"#
+);
+
+bench_parse!(
+    board_list,
+    BoardList,
+    r##"{"id":10,"position":1,"list_type":"label",
+    "label":{"id":5,"name":"Doing","color":"#cc0033"},"collapsed":false}"##
 );
 
 bench_parse!(
