@@ -1,0 +1,17 @@
+[package]
+name = "kaj-tinamit-client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme = "README.md"
+keywords = ["gitlab", "api", "client"]
+categories = ["api-bindings", "web-programming::http-client"]
+description = "Blocking, type-safe GitLab REST API v4 client."
+
+[dependencies]
+kaj-tinamit-http = { workspace = true }
+kaj-tinamit = { workspace = true }
+json-bourne = { workspace = true }

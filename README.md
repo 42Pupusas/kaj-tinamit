@@ -10,11 +10,11 @@ no serde).
 
 | Crate | Role |
 |-------|------|
-| [`gitlab-http`](crates/gitlab-http)   | Blocking HTTP transport over the in-house `xibalba` client with a rustls connector. |
-| [`gitlab-model`](crates/gitlab-model) | Type-safe wire shapes for the GitLab REST API v4, (de)serialized via `json-bourne`. |
-| [`gitlab-client`](crates/gitlab-client) | Ties transport + models together: auth, pagination, and endpoint methods. |
+| [`kaj-tinamit-http`](crates/kaj-tinamit-http)   | Blocking HTTP transport over the in-house `xibalba` client with a rustls connector. |
+| [`kaj-tinamit`](crates/kaj-tinamit-model) | Type-safe wire shapes for the GitLab REST API v4, (de)serialized via `json-bourne`. |
+| [`kaj-tinamit-client`](crates/kaj-tinamit-client) | Ties transport + models together: auth, pagination, and endpoint methods. |
 
-Dependency direction: `gitlab-client → { gitlab-http, gitlab-model }`.
+Dependency direction: `kaj-tinamit-client → { kaj-tinamit-http, kaj-tinamit }`.
 Wire shapes are kept in their own crate so the transport stays free of
 API-surface churn.
 
@@ -28,8 +28,8 @@ API-surface churn.
 ## Quick start
 
 ```rust
-use gitlab_client::GitlabClient;
-use gitlab_client::prelude::*; // endpoint extension traits
+use kaj_tinamit_client::GitlabClient;
+use kaj_tinamit_client::prelude::*; // endpoint extension traits
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Reads GITLAB_URL and GITLAB_PAT from the environment.
@@ -42,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 Every endpoint lives on an extension trait implemented for `GitlabClient`
 (grouped by resource). Bring them all into scope with
-`use gitlab_client::prelude::*;`, or import individual traits
+`use kaj_tinamit_client::prelude::*;`, or import individual traits
 (`UserEndpoints`, `IssueEndpoints`, …).
 
 ## API coverage
@@ -87,14 +87,14 @@ partial update touches only the fields you set.
 ## Testing
 
 - **Unit tests** — example-based parse checks against documented JSON.
-- **Property tests** (`cargo test -p gitlab-model --test properties`) —
+- **Property tests** (`cargo test -p kaj-tinamit --test properties`) —
   serialize/parse round-trip idempotence for every wire model, via
   `proptest` (behind the `proptest` feature).
-- **Benchmarks** (`cargo bench -p gitlab-model`) — parse throughput per
+- **Benchmarks** (`cargo bench -p kaj-tinamit`) — parse throughput per
   model and for paginated `Vec<T>` lists, via `divan`.
 - **Fuzzing** (`cargo +nightly fuzz run parse_models --fuzz-dir
-  crates/gitlab-model/fuzz`) — typed parses of arbitrary bytes never panic.
-- **Live smoke tests** (`cargo test -p gitlab-client --test live --
+  crates/kaj-tinamit-model/fuzz`) — typed parses of arbitrary bytes never panic.
+- **Live smoke tests** (`cargo test -p kaj-tinamit-client --test live --
   --ignored`) — hit a real instance; need `GITLAB_URL` + `GITLAB_PAT`.
 
 ## Environment

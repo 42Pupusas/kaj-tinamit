@@ -1,0 +1,19 @@
+[package]
+name = "kaj-tinamit-http"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme = "README.md"
+keywords = ["gitlab", "http", "transport"]
+categories = ["web-programming::http-client"]
+description = "Blocking HTTP transport over the in-house xibalba stack with a rustls connector."
+
+[dependencies]
+xibalba-client = { workspace = true }
+xibalba-proto = { workspace = true }
+rustls = { workspace = true }
+rustls-rustcrypto = { workspace = true }
+webpki-roots = { workspace = true }
