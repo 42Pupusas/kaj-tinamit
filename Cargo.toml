@@ -13,7 +13,10 @@ rust-version = "1.85"
 
 [workspace.dependencies]
 json-bourne = { version = "0.2.1", features = ["derive"] }
-xibalba-client = "0.2.1"
+# 0.3 carries the wall-clock silence budgets: stalled reads surface as a
+# descriptive TimedOut instead of leaking the socket's raw EAGAIN ("os error
+# 11"), and a failed reconnect can no longer desync the keep-alive stream.
+xibalba-client = "0.3"
 xibalba-proto = "0.2.1"
 rustls-rustcrypto = "0.0.2-alpha"
 rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "custom-provider"] }
