@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "Type-safe wire models for the GitLab REST API v4."
 readme = "README.md"
 keywords = ["gitlab", "api", "rest", "serde", "model"]

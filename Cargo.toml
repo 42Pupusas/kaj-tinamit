@@ -4,7 +4,7 @@ members = ["crates/*"]
 exclude = ["crates/kaj-tinamit-model/fuzz"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["cuarentaydos"]
@@ -21,9 +21,9 @@ xibalba-proto = "0.2.1"
 rustls-rustcrypto = "0.0.2-alpha"
 rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "custom-provider"] }
 webpki-roots = "1"
-kaj-tinamit = { path = "crates/kaj-tinamit-model", version = "0.1.0" }
-kaj-tinamit-http = { path = "crates/kaj-tinamit-http", version = "0.1.0" }
-kaj-tinamit-client = { path = "crates/kaj-tinamit-client", version = "0.1.0" }
+kaj-tinamit = { path = "crates/kaj-tinamit-model", version = "0.1.1" }
+kaj-tinamit-http = { path = "crates/kaj-tinamit-http", version = "0.1.1" }
+kaj-tinamit-client = { path = "crates/kaj-tinamit-client", version = "0.1.1" }
 
 [workspace.lints.rust]
 missing_debug_implementations = "warn"
