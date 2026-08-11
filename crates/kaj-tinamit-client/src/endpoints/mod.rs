@@ -33,6 +33,7 @@ mod search;
 mod snippets;
 mod todos;
 mod users;
+mod variables;
 mod wikis;
 
 pub use award_emoji::AwardEmojiEndpoints;
@@ -75,4 +76,5 @@ pub use snippets::{
 };
 pub use todos::TodoEndpoints;
 pub use users::UserEndpoints;
+pub use variables::{CreateVariable, UpdateVariable, VariableEndpoints, VariableFilter};
 pub use wikis::{CreateWikiPage, UpdateWikiPage, WikiEndpoints};

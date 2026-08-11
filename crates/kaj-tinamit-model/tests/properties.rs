@@ -107,6 +107,10 @@ round_trip!(issue_link_result, IssueLinkResult);
 round_trip!(event, GitlabEvent);
 round_trip!(event_author, EventAuthor);
 
+// variable
+round_trip!(variable_type, VariableType);
+round_trip!(ci_variable, CiVariable);
+
 // wiki
 round_trip!(wiki_format, WikiFormat);
 round_trip!(wiki_page, WikiPage);

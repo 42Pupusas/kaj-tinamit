@@ -9,8 +9,9 @@
 
 use kaj_tinamit_client::prelude::*;
 use kaj_tinamit_client::{
-    CommitAction, CreateCommit, CreateEnvironment, CreateIssue, CreateLabel, GitlabClient,
-    IssueQuery, IssueScope, IssueStateFilter, UpdateEnvironment, UpdateIssue,
+    CommitAction, CreateCommit, CreateEnvironment, CreateIssue, CreateLabel, CreateVariable,
+    GitlabClient, IssueQuery, IssueScope, IssueStateFilter, UpdateEnvironment, UpdateIssue,
+    UpdateVariable, VariableFilter,
 };
 
 /// The project the write tests operate on. Override with `GITLAB_TEST_PROJECT`
@@ -1148,6 +1149,67 @@ fn write_label_lifecycle() {
         .delete_project_label(pid, name)
         .expect("delete_project_label failed");
     eprintln!("  deleted label {name}");
+}
+
+/// Exercises the CI/CD variables category read side.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn variables_smoke() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let pid = write_test_project(&client);
+
+    let variables = client
+        .project_variables(pid)
+        .expect("project_variables failed");
+    eprintln!("project #{pid} variables: {}", variables.len());
+    for v in variables.iter().take(10) {
+        eprintln!(
+            "  {} scope={} {:?} hidden={}",
+            v.key,
+            v.environment_scope.as_deref().unwrap_or("*"),
+            v.visibility(),
+            v.hidden
+        );
+    }
+
+    if let Some(first) = variables.iter().find(|v| v.applies_everywhere()) {
+        let one = client
+            .project_variable(pid, &first.key, &VariableFilter::new())
+            .expect("project_variable failed");
+        assert_eq!(one.key, first.key);
+    }
+}
+
+/// CI/CD variable lifecycle: create -> update -> delete.
+#[test]
+#[ignore = "mutates a real project; requires GITLAB_URL + GITLAB_PAT"]
+fn write_variable_lifecycle() {
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let pid = write_test_project(&client);
+
+    let key = "KAJ_TINAMIT_TEST";
+    let filter = VariableFilter::new();
+    client.delete_project_variable(pid, key, &filter).ok();
+
+    let created = client
+        .create_project_variable(
+            pid,
+            &CreateVariable::new(key, "initial").with_description("temp"),
+        )
+        .expect("create_project_variable failed");
+    eprintln!("created variable {}", created.key);
+    assert_eq!(created.value.as_deref(), Some("initial"));
+
+    let updated = client
+        .update_project_variable(pid, key, &UpdateVariable::new("updated"), &filter)
+        .expect("update_project_variable failed");
+    assert_eq!(updated.value.as_deref(), Some("updated"));
+    eprintln!("  updated value");
+
+    client
+        .delete_project_variable(pid, key, &filter)
+        .expect("delete_project_variable failed");
+    eprintln!("  deleted variable {key}");
 }
 
 /// Repository lifecycle: create branch -> commit a file -> delete branch.

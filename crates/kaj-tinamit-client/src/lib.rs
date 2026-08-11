@@ -32,7 +32,7 @@ pub use endpoints::{
     CommitFile, CommitStatusUpdate, CreateCommit, CreateDeployKey, CreateDeployToken,
     CreateDeployment, CreateEnvironment, CreateEpic, CreateIssue, CreateLabel, CreateMergeRequest,
     CreateMilestone, CreatePipelineSchedule, CreateProject, CreateRelease, CreateSnippet,
-    CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
+    CreateVariable, CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
     EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
     IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
     LabelEndpoints, LinkType, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery,
@@ -42,7 +42,8 @@ pub use endpoints::{
     RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints, SnippetFileInput,
     TodoEndpoints, UpdateDeployment, UpdateEnvironment, UpdateEpic, UpdateIssue, UpdateLabel,
     UpdateMergeRequest, UpdateMilestone, UpdatePipelineSchedule, UpdateProject, UpdateRelease,
-    UpdateRunner, UpdateSnippet, UpdateWikiPage, UserEndpoints, WikiEndpoints,
+    UpdateRunner, UpdateSnippet, UpdateVariable, UpdateWikiPage, UserEndpoints, VariableEndpoints,
+    VariableFilter, WikiEndpoints,
 };
 pub use error::{ConfigError, Error, HttpMethod, Resource};
 pub use pagination::PaginationConfig;
@@ -57,7 +58,7 @@ pub mod prelude {
         MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineScheduleEndpoints,
         ProjectEndpoints, ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints,
         RepositoryEndpoints, ResourceEventEndpoints, RunnerEndpoints, SearchEndpoints,
-        SnippetEndpoints, TodoEndpoints, UserEndpoints, WikiEndpoints,
+        SnippetEndpoints, TodoEndpoints, UserEndpoints, VariableEndpoints, WikiEndpoints,
     };
 }
 

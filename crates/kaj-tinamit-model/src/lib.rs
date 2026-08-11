@@ -65,6 +65,7 @@ pub mod search;
 pub mod snippet;
 pub mod todo;
 pub mod user;
+pub mod variable;
 pub mod wiki;
 
 pub use award_emoji::*;
@@ -97,6 +98,7 @@ pub use search::*;
 pub use snippet::*;
 pub use todo::*;
 pub use user::*;
+pub use variable::*;
 pub use wiki::*;
 
 #[cfg(test)]

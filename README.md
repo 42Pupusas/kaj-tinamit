@@ -78,6 +78,7 @@ live-verified against a real instance. Write operations (`POST`/`PUT`/
 | Environments & deployments | `EnvironmentEndpoints`, `DeploymentEndpoints` | ✎ create/update/stop/delete environment; create/update/delete deployment |
 | Runners | `RunnerEndpoints` (+ `RunnerQuery`) | ✎ update/pause/delete, assign/unassign project, reset token |
 | Deploy keys & tokens | `DeployKeyEndpoints`, `DeployTokenEndpoints` | ✎ add/enable/delete key; create/delete token |
+| CI/CD variables | `VariableEndpoints` (+ `VariableFilter`) | ✎ create/update/delete (project + group) |
 
 Write bodies are small builder structs (`CreateIssue`, `UpdateMergeRequest`,
 `CommitFile`, …) re-exported at the crate root. Optional fields are omitted
