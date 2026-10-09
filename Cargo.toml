@@ -4,7 +4,7 @@ members = ["crates/*"]
 exclude = ["crates/kaj-tinamit-model/fuzz"]
 
 [workspace.package]
-version = "0.1.1"
+version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["cuarentaydos"]
@@ -12,7 +12,7 @@ repository = "https://github.com/42Pupusas/kaj-tinamit"
 rust-version = "1.85"
 
 [workspace.dependencies]
-json-bourne = { version = "0.2.1", features = ["derive"] }
+json-bourne = { version = "0.3", features = ["derive"] }
 # 0.3 carries the wall-clock silence budgets: stalled reads surface as a
 # descriptive TimedOut instead of leaking the socket's raw EAGAIN ("os error
 # 11"), and a failed reconnect can no longer desync the keep-alive stream.
@@ -21,9 +21,9 @@ xibalba-proto = "0.2.1"
 rustls-rustcrypto = "0.0.2-alpha"
 rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "custom-provider"] }
 webpki-roots = "1"
-kaj-tinamit = { path = "crates/kaj-tinamit-model", version = "0.1.1" }
-kaj-tinamit-http = { path = "crates/kaj-tinamit-http", version = "0.1.1" }
-kaj-tinamit-client = { path = "crates/kaj-tinamit-client", version = "0.1.1" }
+kaj-tinamit = { path = "crates/kaj-tinamit-model", version = "0.2.0" }
+kaj-tinamit-http = { path = "crates/kaj-tinamit-http", version = "0.2.0" }
+kaj-tinamit-client = { path = "crates/kaj-tinamit-client", version = "0.2.0" }
 
 [workspace.lints.rust]
 missing_debug_implementations = "warn"

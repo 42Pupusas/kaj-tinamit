@@ -3,7 +3,7 @@
 Blocking, type-safe GitLab REST API v4 client for Rust. It combines [`kaj-tinamit`](https://crates.io/crates/kaj-tinamit) wire models with [`kaj-tinamit-http`](https://crates.io/crates/kaj-tinamit-http) transport and exposes endpoint extension traits through `prelude`.
 
 ```toml
-kaj-tinamit-client = "0.1"
+kaj-tinamit-client = "0.2"
 ```
 
 ```rust,no_run

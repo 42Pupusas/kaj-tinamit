@@ -6,6 +6,16 @@ All notable changes to this workspace are documented here. The three crates
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-08
+
+### Changed
+
+- **Breaking:** `json-bourne` is now 0.3 (was 0.2). Its types are part of the
+  public API: `kaj_tinamit_client::Error::Json` wraps `json_bourne::Error`, and
+  every wire model implements `json_bourne::FromJson` / `ToJson`. Downstream
+  crates that name those types must move to `json-bourne` 0.3 as well, or they
+  will see two incompatible copies in their dependency graph.
+
 ## [0.1.1] - 2026-08-11
 
 ### Added
@@ -39,5 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   transport over xibalba with a rustls connector), and `kaj-tinamit-client`
   (the typed GitLab REST API v4 client) covering 26 API categories.
 
+[0.2.0]: https://github.com/42Pupusas/kaj-tinamit/releases/tag/v0.2.0
 [0.1.1]: https://github.com/42Pupusas/kaj-tinamit/releases/tag/v0.1.1
 [0.1.0]: https://github.com/42Pupusas/kaj-tinamit/releases/tag/v0.1.0

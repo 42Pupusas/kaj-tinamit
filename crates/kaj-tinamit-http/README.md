@@ -14,7 +14,7 @@ Licensed under either of Apache License, Version 2.0 or MIT, at your option.
 License: Apache-2.0 OR MIT
 
 ```toml
-kaj-tinamit-http = "0.1"
+kaj-tinamit-http = "0.2"
 ```
 
 See the [workspace repository](https://github.com/42Pupusas/kaj-tinamit) for API documentation and examples.
