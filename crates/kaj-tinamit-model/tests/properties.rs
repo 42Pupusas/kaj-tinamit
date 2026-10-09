@@ -59,7 +59,15 @@ round_trip!(user, GitlabUser);
 round_trip!(visibility, Visibility);
 round_trip!(namespace_kind, NamespaceKind);
 round_trip!(namespace, Namespace);
+round_trip!(feature_access, FeatureAccess);
+round_trip!(merge_method, MergeMethod);
+round_trip!(project_ref, ProjectRef);
+round_trip!(access_grant, AccessGrant);
+round_trip!(project_permissions, ProjectPermissions);
 round_trip!(project, GitlabProject);
+
+// hooks
+round_trip!(project_hook, ProjectHook);
 
 // issue
 round_trip!(issue_state, IssueState);
@@ -197,7 +205,16 @@ round_trip!(artifacts_file, ArtifactsFile);
 round_trip!(job_commit, JobCommit);
 round_trip!(job_pipeline, JobPipeline);
 round_trip!(job_runner, JobRunner);
+round_trip!(downstream_pipeline, DownstreamPipeline);
 round_trip!(job, Job);
+
+// test reports + lint
+round_trip!(test_case, TestCase);
+round_trip!(test_suite, TestSuite);
+round_trip!(test_report, TestReport);
+round_trip!(test_totals, TestTotals);
+round_trip!(test_report_summary, TestReportSummary);
+round_trip!(ci_lint_result, CiLintResult);
 
 // metadata + namespaces
 round_trip!(kas_metadata, KasMetadata);

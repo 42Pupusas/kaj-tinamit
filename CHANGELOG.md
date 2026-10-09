@@ -8,7 +8,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.2.0] - 2026-10-08
 
+### Added
+
+- **Projects**
+  - `GitlabProject` gains `default_branch`, `web_url`, `http_url_to_repo`,
+    `ssh_url_to_repo`, `readme_url`, `avatar_url`, `topics`, `star_count`,
+    `forks_count`, `empty_repo`, `ci_config_path`, `merge_method`, the
+    per-feature `*_access_level` fields, `forked_from_project`, and
+    `permissions`. New models: `FeatureAccess`, `MergeMethod`, `ProjectRef`,
+    `ProjectPermissions`, `AccessGrant`.
+  - `ProjectQuery` filters for `projects()`: membership, owned, starred,
+    search, archived, visibility, topic, minimum access level, and ordering
+    (`ProjectOrder`, `SortDirection`).
+  - `forks`, `fork_project` (`ForkProject`), `unlink_fork`,
+    `transfer_project`, `share_project_with_group`,
+    `unshare_project_with_group`.
+  - `CreateProject` / `UpdateProject` set topics, `ci_config_path`, merge
+    method, feature access levels, and merge rules.
+  - `HookEndpoints`: list, get, add, edit, delete, and test project webhooks
+    (`ProjectHook`, `HookSettings`, `HookEvent`).
+- **Groups:** `create_group` (`CreateGroup`, including subgroups),
+  `update_group` (`UpdateGroup`), `delete_group`.
+- **CI**
+  - `JobQuery` for `jobs`, `pipeline_jobs`, and `pipeline_trigger_jobs`:
+    filter by one or more `CiStatus` values, and `include_retried`.
+  - `play_job_with` runs a manual job with `JobVariable`s.
+  - `Job::downstream_pipeline` (`DownstreamPipeline`) on trigger jobs.
+  - `TestReportEndpoints`: `pipeline_test_report` and
+    `pipeline_test_report_summary` (`TestReport`, `TestSuite`, `TestCase`,
+    `TestReportSummary`, `TestTotals`); `TestSuite::broken_cases`.
+  - `LintEndpoints`: `lint_ci_config` (`CiLint`, optionally simulated on a
+    ref) and `lint_project_ci` (`CiLintResult`).
+  - `CiStatus::as_str`, `Visibility::as_str`.
+
 ### Changed
+
+- **Breaking:** every project, issue, milestone, group, wiki, and user id
+  parameter is `i64`. `project`, `update_project`, `delete_project`,
+  `archive_project`, `unarchive_project`, `star_project`, `unstar_project`,
+  the issue, milestone, and wiki endpoints, and `user_by_id` took `i32`.
+- **Breaking:** `projects()` takes a `&ProjectQuery`. The old call listed
+  member projects only; pass `ProjectQuery::new().membership()` for the same
+  result.
+- **Breaking:** `jobs`, `pipeline_jobs`, and `pipeline_trigger_jobs` take a
+  `&JobQuery`; `JobQuery::new()` keeps the old behaviour.
+- **Breaking:** `CreateProject` / `UpdateProject` take `Visibility` instead
+  of a string, and moved into their own module (still re-exported from the
+  crate root).
 
 - **Breaking:** `json-bourne` is now 0.3 (was 0.2). Its types are part of the
   public API: `kaj_tinamit_client::Error::Json` wraps `json_bourne::Error`, and

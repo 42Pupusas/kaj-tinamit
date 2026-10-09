@@ -6,9 +6,12 @@
 use json_bourne::ToJson;
 use kaj_tinamit::{Job, PipelineDetail, PipelineSummary, PipelineVariable};
 
+use super::job_query::PlayJobBody;
+use super::{JobQuery, JobVariable};
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
+use crate::query::QueryParams;
 
 /// A CI/CD variable passed when triggering a pipeline.
 #[derive(Debug, Clone, ToJson)]
@@ -57,7 +60,7 @@ struct CreatePipelineBody {
 /// setter narrows the listing. Values are percent-encoded.
 #[derive(Debug, Default, Clone)]
 pub struct PipelineQuery {
-    params: Vec<(&'static str, String)>,
+    params: QueryParams,
 }
 
 impl PipelineQuery {
@@ -70,14 +73,14 @@ impl PipelineQuery {
     /// Filter by branch or tag.
     #[must_use]
     pub fn with_ref(mut self, ref_name: &str) -> Self {
-        self.params.push(("ref", ref_name.to_string()));
+        self.params.push("ref", ref_name);
         self
     }
 
     /// Filter by status (e.g. `success`, `failed`, `running`).
     #[must_use]
     pub fn with_status(mut self, status: &str) -> Self {
-        self.params.push(("status", status.to_string()));
+        self.params.push("status", status);
         self
     }
 
@@ -85,39 +88,33 @@ impl PipelineQuery {
     /// `tags`).
     #[must_use]
     pub fn with_scope(mut self, scope: &str) -> Self {
-        self.params.push(("scope", scope.to_string()));
+        self.params.push("scope", scope);
         self
     }
 
     /// Filter by source (e.g. `push`, `web`, `schedule`).
     #[must_use]
     pub fn with_source(mut self, source: &str) -> Self {
-        self.params.push(("source", source.to_string()));
+        self.params.push("source", source);
         self
     }
 
     /// Filter by commit SHA.
     #[must_use]
     pub fn with_sha(mut self, sha: &str) -> Self {
-        self.params.push(("sha", sha.to_string()));
+        self.params.push("sha", sha);
         self
     }
 
     /// Filter by triggering username.
     #[must_use]
     pub fn with_username(mut self, username: &str) -> Self {
-        self.params.push(("username", username.to_string()));
+        self.params.push("username", username);
         self
     }
 
-    /// Render as a URL query string (without leading `?`); empty when no
-    /// filters are set.
-    fn to_query_string(&self) -> String {
-        self.params
-            .iter()
-            .map(|(k, v)| format!("{k}={}", v.percent_encode()))
-            .collect::<Vec<_>>()
-            .join("&")
+    fn apply(&self, path: String) -> String {
+        self.params.apply(path)
     }
 }
 
@@ -206,13 +203,7 @@ impl PipelineEndpoints for GitlabClient {
         project_id: i64,
         query: &PipelineQuery,
     ) -> Result<Vec<PipelineSummary>, Error> {
-        let mut url = format!("api/v4/projects/{project_id}/pipelines");
-        let qs = query.to_query_string();
-        if !qs.is_empty() {
-            url.push('?');
-            url.push_str(&qs);
-        }
-        self.get_paginated(&url)
+        self.get_paginated(&query.apply(format!("api/v4/projects/{project_id}/pipelines")))
     }
 
     fn pipeline(&self, project_id: i64, pipeline_id: i64) -> Result<PipelineDetail, Error> {
@@ -281,26 +272,39 @@ impl PipelineEndpoints for GitlabClient {
 
 /// Read endpoints for CI/CD jobs.
 pub trait JobEndpoints {
-    /// List all jobs for a project.
+    /// List a project's jobs, filtered by `query`.
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn jobs(&self, project_id: i64) -> Result<Vec<Job>, Error>;
+    fn jobs(&self, project_id: i64, query: &JobQuery) -> Result<Vec<Job>, Error>;
 
-    /// List all jobs for a specific pipeline.
+    /// List a pipeline's jobs, filtered by `query`. Retried jobs are left
+    /// out unless [`JobQuery::include_retried`] is set.
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn pipeline_jobs(&self, project_id: i64, pipeline_id: i64) -> Result<Vec<Job>, Error>;
+    fn pipeline_jobs(
+        &self,
+        project_id: i64,
+        pipeline_id: i64,
+        query: &JobQuery,
+    ) -> Result<Vec<Job>, Error>;
 
-    /// List all trigger (bridge) jobs for a specific pipeline.
+    /// List a pipeline's trigger (bridge) jobs, filtered by `query`. Each
+    /// carries the pipeline it started in
+    /// [`Job::downstream_pipeline`](kaj_tinamit::Job::downstream_pipeline).
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn pipeline_trigger_jobs(&self, project_id: i64, pipeline_id: i64) -> Result<Vec<Job>, Error>;
+    fn pipeline_trigger_jobs(
+        &self,
+        project_id: i64,
+        pipeline_id: i64,
+        query: &JobQuery,
+    ) -> Result<Vec<Job>, Error>;
 
     /// Retrieve a single job by ID.
     ///
@@ -341,6 +345,18 @@ pub trait JobEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn play_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error>;
 
+    /// Play a manual job with extra CI/CD `variables`. Returns the job.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn play_job_with(
+        &self,
+        project_id: i64,
+        job_id: i64,
+        variables: Vec<JobVariable>,
+    ) -> Result<Job, Error>;
+
     /// Retry a failed/canceled job. Returns the new job.
     ///
     /// # Errors
@@ -364,20 +380,30 @@ pub trait JobEndpoints {
 }
 
 impl JobEndpoints for GitlabClient {
-    fn jobs(&self, project_id: i64) -> Result<Vec<Job>, Error> {
-        self.get_paginated(&format!("api/v4/projects/{project_id}/jobs"))
+    fn jobs(&self, project_id: i64, query: &JobQuery) -> Result<Vec<Job>, Error> {
+        self.get_paginated(&query.apply(format!("api/v4/projects/{project_id}/jobs")))
     }
 
-    fn pipeline_jobs(&self, project_id: i64, pipeline_id: i64) -> Result<Vec<Job>, Error> {
-        self.get_paginated(&format!(
+    fn pipeline_jobs(
+        &self,
+        project_id: i64,
+        pipeline_id: i64,
+        query: &JobQuery,
+    ) -> Result<Vec<Job>, Error> {
+        self.get_paginated(&query.apply(format!(
             "api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs"
-        ))
+        )))
     }
 
-    fn pipeline_trigger_jobs(&self, project_id: i64, pipeline_id: i64) -> Result<Vec<Job>, Error> {
-        self.get_paginated(&format!(
+    fn pipeline_trigger_jobs(
+        &self,
+        project_id: i64,
+        pipeline_id: i64,
+        query: &JobQuery,
+    ) -> Result<Vec<Job>, Error> {
+        self.get_paginated(&query.apply(format!(
             "api/v4/projects/{project_id}/pipelines/{pipeline_id}/trigger_jobs"
-        ))
+        )))
     }
 
     fn job(&self, project_id: i64, job_id: i64) -> Result<Job, Error> {
@@ -404,6 +430,20 @@ impl JobEndpoints for GitlabClient {
         self.post_no_body(&format!("api/v4/projects/{project_id}/jobs/{job_id}/play"))
     }
 
+    fn play_job_with(
+        &self,
+        project_id: i64,
+        job_id: i64,
+        variables: Vec<JobVariable>,
+    ) -> Result<Job, Error> {
+        self.post(
+            &format!("api/v4/projects/{project_id}/jobs/{job_id}/play"),
+            &PlayJobBody {
+                job_variables_attributes: variables,
+            },
+        )
+    }
+
     fn retry_job(&self, project_id: i64, job_id: i64) -> Result<Job, Error> {
         self.post_no_body(&format!("api/v4/projects/{project_id}/jobs/{job_id}/retry"))
     }
@@ -425,7 +465,7 @@ mod tests {
 
     #[test]
     fn query_empty_by_default() {
-        assert_eq!(PipelineQuery::new().to_query_string(), "");
+        assert_eq!(PipelineQuery::new().apply("p".into()), "p");
     }
 
     #[test]
@@ -433,6 +473,6 @@ mod tests {
         let q = PipelineQuery::new()
             .with_ref("feature/x")
             .with_status("success");
-        assert_eq!(q.to_query_string(), "ref=feature%2Fx&status=success");
+        assert_eq!(q.apply("p".into()), "p?ref=feature%2Fx&status=success");
     }
 }

@@ -35,7 +35,7 @@ pub trait UserEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn user_by_id(&self, id: i32) -> Result<GitlabUser, Error>;
+    fn user_by_id(&self, id: i64) -> Result<GitlabUser, Error>;
 }
 
 impl UserEndpoints for GitlabClient {
@@ -56,7 +56,7 @@ impl UserEndpoints for GitlabClient {
             .ok_or(Error::NotFound(Resource::User))
     }
 
-    fn user_by_id(&self, id: i32) -> Result<GitlabUser, Error> {
+    fn user_by_id(&self, id: i64) -> Result<GitlabUser, Error> {
         self.get(&format!("api/v4/users/{id}"))
     }
 }

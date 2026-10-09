@@ -82,14 +82,14 @@ pub trait WikiEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn wiki_pages(&self, project_id: i32) -> Result<Vec<WikiPageList>, Error>;
+    fn wiki_pages(&self, project_id: i64) -> Result<Vec<WikiPageList>, Error>;
 
     /// Get a single wiki page (including `content`) by slug.
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn wiki_page(&self, project_id: i32, slug: &str) -> Result<WikiPage, Error>;
+    fn wiki_page(&self, project_id: i64, slug: &str) -> Result<WikiPage, Error>;
 
     /// List all wiki pages for a group (entries omit `content`).
     ///
@@ -112,7 +112,7 @@ pub trait WikiEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn create_wiki_page(&self, project_id: i32, page: &CreateWikiPage) -> Result<WikiPage, Error>;
+    fn create_wiki_page(&self, project_id: i64, page: &CreateWikiPage) -> Result<WikiPage, Error>;
 
     /// Update a project wiki page (by slug). Returns the updated page.
     ///
@@ -121,7 +121,7 @@ pub trait WikiEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn update_wiki_page(
         &self,
-        project_id: i32,
+        project_id: i64,
         slug: &str,
         update: &UpdateWikiPage,
     ) -> Result<WikiPage, Error>;
@@ -131,7 +131,7 @@ pub trait WikiEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn delete_wiki_page(&self, project_id: i32, slug: &str) -> Result<(), Error>;
+    fn delete_wiki_page(&self, project_id: i64, slug: &str) -> Result<(), Error>;
 
     /// Create a group wiki page. Returns the created page.
     ///
@@ -165,11 +165,11 @@ pub trait WikiEndpoints {
 }
 
 impl WikiEndpoints for GitlabClient {
-    fn wiki_pages(&self, project_id: i32) -> Result<Vec<WikiPageList>, Error> {
+    fn wiki_pages(&self, project_id: i64) -> Result<Vec<WikiPageList>, Error> {
         self.get_paginated(&format!("api/v4/projects/{project_id}/wikis"))
     }
 
-    fn wiki_page(&self, project_id: i32, slug: &str) -> Result<WikiPage, Error> {
+    fn wiki_page(&self, project_id: i64, slug: &str) -> Result<WikiPage, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/wikis/{}",
             slug.percent_encode()
@@ -187,13 +187,13 @@ impl WikiEndpoints for GitlabClient {
         ))
     }
 
-    fn create_wiki_page(&self, project_id: i32, page: &CreateWikiPage) -> Result<WikiPage, Error> {
+    fn create_wiki_page(&self, project_id: i64, page: &CreateWikiPage) -> Result<WikiPage, Error> {
         self.post(&format!("api/v4/projects/{project_id}/wikis"), page)
     }
 
     fn update_wiki_page(
         &self,
-        project_id: i32,
+        project_id: i64,
         slug: &str,
         update: &UpdateWikiPage,
     ) -> Result<WikiPage, Error> {
@@ -206,7 +206,7 @@ impl WikiEndpoints for GitlabClient {
         )
     }
 
-    fn delete_wiki_page(&self, project_id: i32, slug: &str) -> Result<(), Error> {
+    fn delete_wiki_page(&self, project_id: i64, slug: &str) -> Result<(), Error> {
         self.delete(&format!(
             "api/v4/projects/{project_id}/wikis/{}",
             slug.percent_encode()

@@ -153,6 +153,29 @@ impl GitlabClient {
         Ok(())
     }
 
+    /// Perform a POST with a JSON body whose response is discarded, for
+    /// actions whose echo the caller has no use for (e.g. sharing a
+    /// project with a group).
+    pub(crate) fn post_body_discard<B>(&self, path: &str, body: &B) -> Result<(), Error>
+    where
+        B: ToJson,
+    {
+        let url = format!("{}/{}", self.base_url, path);
+        let payload = json_bourne::to_vec(body)?;
+        let response = kaj_tinamit_http::post(&url)
+            .header("Authorization", self.auth())
+            .json(payload)
+            .send()?;
+
+        if !response.is_success() {
+            return Err(Error::Api {
+                method: HttpMethod::Post,
+                status: response.status,
+            });
+        }
+        Ok(())
+    }
+
     /// Perform a bodyless POST whose response is discarded (204-style
     /// action endpoints, e.g. “mark all to-dos done”).
     pub(crate) fn post_discard(&self, path: &str) -> Result<(), Error> {

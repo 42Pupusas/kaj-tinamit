@@ -121,28 +121,28 @@ pub trait MilestoneEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_milestones(&self, project_id: i32) -> Result<Vec<Milestone>, Error>;
+    fn project_milestones(&self, project_id: i64) -> Result<Vec<Milestone>, Error>;
 
     /// Fetch a single project milestone by ID.
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn project_milestone(&self, project_id: i32, milestone_id: i32) -> Result<Milestone, Error>;
+    fn project_milestone(&self, project_id: i64, milestone_id: i64) -> Result<Milestone, Error>;
 
     /// Fetch all milestones for a group.
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn group_milestones(&self, group_id: i32) -> Result<Vec<Milestone>, Error>;
+    fn group_milestones(&self, group_id: i64) -> Result<Vec<Milestone>, Error>;
 
     /// Fetch a single group milestone by ID.
     ///
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn group_milestone(&self, group_id: i32, milestone_id: i32) -> Result<Milestone, Error>;
+    fn group_milestone(&self, group_id: i64, milestone_id: i64) -> Result<Milestone, Error>;
 
     // --- Writes ---
 
@@ -153,7 +153,7 @@ pub trait MilestoneEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn create_project_milestone(
         &self,
-        project_id: i32,
+        project_id: i64,
         milestone: &CreateMilestone,
     ) -> Result<Milestone, Error>;
 
@@ -164,8 +164,8 @@ pub trait MilestoneEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn update_project_milestone(
         &self,
-        project_id: i32,
-        milestone_id: i32,
+        project_id: i64,
+        milestone_id: i64,
         update: &UpdateMilestone,
     ) -> Result<Milestone, Error>;
 
@@ -174,7 +174,7 @@ pub trait MilestoneEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn delete_project_milestone(&self, project_id: i32, milestone_id: i32) -> Result<(), Error>;
+    fn delete_project_milestone(&self, project_id: i64, milestone_id: i64) -> Result<(), Error>;
 
     /// Create a group milestone. Returns the created milestone.
     ///
@@ -183,7 +183,7 @@ pub trait MilestoneEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn create_group_milestone(
         &self,
-        group_id: i32,
+        group_id: i64,
         milestone: &CreateMilestone,
     ) -> Result<Milestone, Error>;
 
@@ -194,8 +194,8 @@ pub trait MilestoneEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn update_group_milestone(
         &self,
-        group_id: i32,
-        milestone_id: i32,
+        group_id: i64,
+        milestone_id: i64,
         update: &UpdateMilestone,
     ) -> Result<Milestone, Error>;
 
@@ -204,25 +204,25 @@ pub trait MilestoneEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn delete_group_milestone(&self, group_id: i32, milestone_id: i32) -> Result<(), Error>;
+    fn delete_group_milestone(&self, group_id: i64, milestone_id: i64) -> Result<(), Error>;
 }
 
 impl MilestoneEndpoints for GitlabClient {
-    fn project_milestones(&self, project_id: i32) -> Result<Vec<Milestone>, Error> {
+    fn project_milestones(&self, project_id: i64) -> Result<Vec<Milestone>, Error> {
         self.get_paginated(&format!("api/v4/projects/{project_id}/milestones"))
     }
 
-    fn project_milestone(&self, project_id: i32, milestone_id: i32) -> Result<Milestone, Error> {
+    fn project_milestone(&self, project_id: i64, milestone_id: i64) -> Result<Milestone, Error> {
         self.get(&format!(
             "api/v4/projects/{project_id}/milestones/{milestone_id}"
         ))
     }
 
-    fn group_milestones(&self, group_id: i32) -> Result<Vec<Milestone>, Error> {
+    fn group_milestones(&self, group_id: i64) -> Result<Vec<Milestone>, Error> {
         self.get_paginated(&format!("api/v4/groups/{group_id}/milestones"))
     }
 
-    fn group_milestone(&self, group_id: i32, milestone_id: i32) -> Result<Milestone, Error> {
+    fn group_milestone(&self, group_id: i64, milestone_id: i64) -> Result<Milestone, Error> {
         self.get(&format!(
             "api/v4/groups/{group_id}/milestones/{milestone_id}"
         ))
@@ -230,7 +230,7 @@ impl MilestoneEndpoints for GitlabClient {
 
     fn create_project_milestone(
         &self,
-        project_id: i32,
+        project_id: i64,
         milestone: &CreateMilestone,
     ) -> Result<Milestone, Error> {
         self.post(
@@ -241,8 +241,8 @@ impl MilestoneEndpoints for GitlabClient {
 
     fn update_project_milestone(
         &self,
-        project_id: i32,
-        milestone_id: i32,
+        project_id: i64,
+        milestone_id: i64,
         update: &UpdateMilestone,
     ) -> Result<Milestone, Error> {
         self.put(
@@ -251,7 +251,7 @@ impl MilestoneEndpoints for GitlabClient {
         )
     }
 
-    fn delete_project_milestone(&self, project_id: i32, milestone_id: i32) -> Result<(), Error> {
+    fn delete_project_milestone(&self, project_id: i64, milestone_id: i64) -> Result<(), Error> {
         self.delete(&format!(
             "api/v4/projects/{project_id}/milestones/{milestone_id}"
         ))
@@ -259,7 +259,7 @@ impl MilestoneEndpoints for GitlabClient {
 
     fn create_group_milestone(
         &self,
-        group_id: i32,
+        group_id: i64,
         milestone: &CreateMilestone,
     ) -> Result<Milestone, Error> {
         self.post(&format!("api/v4/groups/{group_id}/milestones"), milestone)
@@ -267,8 +267,8 @@ impl MilestoneEndpoints for GitlabClient {
 
     fn update_group_milestone(
         &self,
-        group_id: i32,
-        milestone_id: i32,
+        group_id: i64,
+        milestone_id: i64,
         update: &UpdateMilestone,
     ) -> Result<Milestone, Error> {
         self.put(
@@ -277,7 +277,7 @@ impl MilestoneEndpoints for GitlabClient {
         )
     }
 
-    fn delete_group_milestone(&self, group_id: i32, milestone_id: i32) -> Result<(), Error> {
+    fn delete_group_milestone(&self, group_id: i64, milestone_id: i64) -> Result<(), Error> {
         self.delete(&format!(
             "api/v4/groups/{group_id}/milestones/{milestone_id}"
         ))

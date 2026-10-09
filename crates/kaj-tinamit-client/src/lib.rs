@@ -25,22 +25,25 @@ mod encode;
 mod endpoints;
 mod error;
 mod pagination;
+mod query;
 
 pub use client::GitlabClient;
 pub use endpoints::{
-    AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CommitAction, CommitEndpoints,
+    AcceptMergeRequest, AwardEmojiEndpoints, BoardEndpoints, CiLint, CommitAction, CommitEndpoints,
     CommitFile, CommitStatusUpdate, CreateCommit, CreateDeployKey, CreateDeployToken,
-    CreateDeployment, CreateEnvironment, CreateEpic, CreateIssue, CreateLabel, CreateMergeRequest,
-    CreateMilestone, CreatePipelineSchedule, CreateProject, CreateRelease, CreateSnippet,
-    CreateVariable, CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints, DeploymentEndpoints,
-    EnvironmentEndpoints, EpicEndpoints, EventEndpoints, GroupEndpoints, IssueEndpoints,
-    IssueLinkEndpoints, IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints,
-    LabelEndpoints, LinkType, MemberEndpoints, MergeRequestEndpoints, MergeRequestQuery,
-    MetadataEndpoints, MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineInput,
-    PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
-    ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints,
-    RunnerEndpoints, RunnerQuery, SearchEndpoints, SnippetEndpoints, SnippetFileInput,
-    TodoEndpoints, UpdateDeployment, UpdateEnvironment, UpdateEpic, UpdateIssue, UpdateLabel,
+    CreateDeployment, CreateEnvironment, CreateEpic, CreateGroup, CreateIssue, CreateLabel,
+    CreateMergeRequest, CreateMilestone, CreatePipelineSchedule, CreateProject, CreateRelease,
+    CreateSnippet, CreateVariable, CreateWikiPage, DeployKeyEndpoints, DeployTokenEndpoints,
+    DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints, EventEndpoints, ForkProject,
+    GroupEndpoints, HookEndpoints, HookEvent, HookSettings, IssueEndpoints, IssueLinkEndpoints,
+    IssueQuery, IssueScope, IssueStateFilter, IterationEndpoints, JobEndpoints, JobQuery,
+    JobVariable, LabelEndpoints, LinkType, LintEndpoints, MemberEndpoints, MergeRequestEndpoints,
+    MergeRequestQuery, MetadataEndpoints, MilestoneEndpoints, NoteEndpoints, PipelineEndpoints,
+    PipelineInput, PipelineQuery, PipelineScheduleEndpoints, ProjectEndpoints, ProjectOrder,
+    ProjectQuery, ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints,
+    RepositoryEndpoints, ResourceEventEndpoints, RunnerEndpoints, RunnerQuery, SearchEndpoints,
+    SnippetEndpoints, SnippetFileInput, SortDirection, TestReportEndpoints, TodoEndpoints,
+    UpdateDeployment, UpdateEnvironment, UpdateEpic, UpdateGroup, UpdateIssue, UpdateLabel,
     UpdateMergeRequest, UpdateMilestone, UpdatePipelineSchedule, UpdateProject, UpdateRelease,
     UpdateRunner, UpdateSnippet, UpdateVariable, UpdateWikiPage, UserEndpoints, VariableEndpoints,
     VariableFilter, WikiEndpoints,
@@ -53,12 +56,13 @@ pub mod prelude {
     pub use crate::endpoints::{
         AwardEmojiEndpoints, BoardEndpoints, CommitEndpoints, DeployKeyEndpoints,
         DeployTokenEndpoints, DeploymentEndpoints, EnvironmentEndpoints, EpicEndpoints,
-        EventEndpoints, GroupEndpoints, IssueEndpoints, IssueLinkEndpoints, IterationEndpoints,
-        JobEndpoints, LabelEndpoints, MemberEndpoints, MergeRequestEndpoints, MetadataEndpoints,
-        MilestoneEndpoints, NoteEndpoints, PipelineEndpoints, PipelineScheduleEndpoints,
-        ProjectEndpoints, ProjectSnippetEndpoints, ProtectedEndpoints, ReleaseEndpoints,
-        RepositoryEndpoints, ResourceEventEndpoints, RunnerEndpoints, SearchEndpoints,
-        SnippetEndpoints, TodoEndpoints, UserEndpoints, VariableEndpoints, WikiEndpoints,
+        EventEndpoints, GroupEndpoints, HookEndpoints, IssueEndpoints, IssueLinkEndpoints,
+        IterationEndpoints, JobEndpoints, LabelEndpoints, LintEndpoints, MemberEndpoints,
+        MergeRequestEndpoints, MetadataEndpoints, MilestoneEndpoints, NoteEndpoints,
+        PipelineEndpoints, PipelineScheduleEndpoints, ProjectEndpoints, ProjectSnippetEndpoints,
+        ProtectedEndpoints, ReleaseEndpoints, RepositoryEndpoints, ResourceEventEndpoints,
+        RunnerEndpoints, SearchEndpoints, SnippetEndpoints, TestReportEndpoints, TodoEndpoints,
+        UserEndpoints, VariableEndpoints, WikiEndpoints,
     };
 }
 

@@ -1,13 +1,15 @@
 //! Group and membership endpoints: the **Groups** and **Members** API
 //! categories (group and project members, including inherited).
 //!
-//! Group reads list/fetch groups and their projects; member reads list
-//! direct/inherited members. Writes add, update, and remove members on
-//! both groups and projects.
+//! Group reads list/fetch groups and their projects; group writes create,
+//! update, and delete groups. Member reads list direct/inherited members;
+//! member writes add, update, and remove members on both groups and
+//! projects.
 
 use json_bourne::ToJson;
 use kaj_tinamit::{AccessLevel, GitlabGroup, GitlabProject, Member};
 
+use super::{CreateGroup, UpdateGroup};
 use crate::client::GitlabClient;
 use crate::encode::PercentEncode;
 use crate::error::Error;
@@ -31,7 +33,7 @@ struct UpdateMemberBody {
     expires_at: Option<String>,
 }
 
-/// Read endpoints for groups.
+/// Group endpoints.
 pub trait GroupEndpoints {
     /// List all groups visible to the authenticated user.
     ///
@@ -81,6 +83,31 @@ pub trait GroupEndpoints {
     ///
     /// Propagates transport, API-status, and JSON errors.
     fn group_shared_projects(&self, id: i64) -> Result<Vec<GitlabProject>, Error>;
+
+    // --- Writes ---
+
+    /// Create a group, or a subgroup when `parent_id` is set. Returns the
+    /// created group.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn create_group(&self, group: &CreateGroup) -> Result<GitlabGroup, Error>;
+
+    /// Update a group. Returns the updated group.
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn update_group(&self, id: i64, update: &UpdateGroup) -> Result<GitlabGroup, Error>;
+
+    /// Delete a group (GitLab may schedule the removal rather than delete
+    /// at once).
+    ///
+    /// # Errors
+    ///
+    /// Propagates transport, API-status, and JSON errors.
+    fn delete_group(&self, id: i64) -> Result<(), Error>;
 }
 
 impl GroupEndpoints for GitlabClient {
@@ -110,6 +137,18 @@ impl GroupEndpoints for GitlabClient {
 
     fn group_shared_projects(&self, id: i64) -> Result<Vec<GitlabProject>, Error> {
         self.get_paginated(&format!("api/v4/groups/{id}/projects/shared"))
+    }
+
+    fn create_group(&self, group: &CreateGroup) -> Result<GitlabGroup, Error> {
+        self.post("api/v4/groups", group)
+    }
+
+    fn update_group(&self, id: i64, update: &UpdateGroup) -> Result<GitlabGroup, Error> {
+        self.put(&format!("api/v4/groups/{id}"), update)
+    }
+
+    fn delete_group(&self, id: i64) -> Result<(), Error> {
+        self.delete(&format!("api/v4/groups/{id}"))
     }
 }
 

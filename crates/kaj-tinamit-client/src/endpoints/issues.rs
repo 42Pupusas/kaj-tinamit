@@ -328,7 +328,7 @@ pub trait IssueEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn project_issues(
         &self,
-        project_id: i32,
+        project_id: i64,
         query: &IssueQuery,
     ) -> Result<Vec<GitlabIssue>, Error>;
 
@@ -337,7 +337,7 @@ pub trait IssueEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn issue(&self, project_id: i32, issue_iid: i32) -> Result<GitlabIssue, Error>;
+    fn issue(&self, project_id: i64, issue_iid: i64) -> Result<GitlabIssue, Error>;
 
     /// Fetch instance-wide issue statistics (open/closed/all counts) matching
     /// the given filters — cheaper than paging every issue for a summary.
@@ -354,7 +354,7 @@ pub trait IssueEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn project_issues_statistics(
         &self,
-        project_id: i32,
+        project_id: i64,
         query: &IssueQuery,
     ) -> Result<IssueStatistics, Error>;
 
@@ -363,7 +363,7 @@ pub trait IssueEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn create_issue(&self, project_id: i32, issue: &CreateIssue) -> Result<GitlabIssue, Error>;
+    fn create_issue(&self, project_id: i64, issue: &CreateIssue) -> Result<GitlabIssue, Error>;
 
     /// Update an existing issue (by IID). Returns the updated issue.
     ///
@@ -372,8 +372,8 @@ pub trait IssueEndpoints {
     /// Propagates transport, API-status, and JSON errors.
     fn update_issue(
         &self,
-        project_id: i32,
-        issue_iid: i32,
+        project_id: i64,
+        issue_iid: i64,
         update: &UpdateIssue,
     ) -> Result<GitlabIssue, Error>;
 
@@ -382,7 +382,7 @@ pub trait IssueEndpoints {
     /// # Errors
     ///
     /// Propagates transport, API-status, and JSON errors.
-    fn delete_issue(&self, project_id: i32, issue_iid: i32) -> Result<(), Error>;
+    fn delete_issue(&self, project_id: i64, issue_iid: i64) -> Result<(), Error>;
 }
 
 impl IssueEndpoints for GitlabClient {
@@ -410,7 +410,7 @@ impl IssueEndpoints for GitlabClient {
 
     fn project_issues(
         &self,
-        project_id: i32,
+        project_id: i64,
         query: &IssueQuery,
     ) -> Result<Vec<GitlabIssue>, Error> {
         let path = format!(
@@ -420,7 +420,7 @@ impl IssueEndpoints for GitlabClient {
         self.get_paginated(&path)
     }
 
-    fn issue(&self, project_id: i32, issue_iid: i32) -> Result<GitlabIssue, Error> {
+    fn issue(&self, project_id: i64, issue_iid: i64) -> Result<GitlabIssue, Error> {
         self.get(&format!("api/v4/projects/{project_id}/issues/{issue_iid}"))
     }
 
@@ -433,7 +433,7 @@ impl IssueEndpoints for GitlabClient {
 
     fn project_issues_statistics(
         &self,
-        project_id: i32,
+        project_id: i64,
         query: &IssueQuery,
     ) -> Result<IssueStatistics, Error> {
         self.get(&format!(
@@ -442,14 +442,14 @@ impl IssueEndpoints for GitlabClient {
         ))
     }
 
-    fn create_issue(&self, project_id: i32, issue: &CreateIssue) -> Result<GitlabIssue, Error> {
+    fn create_issue(&self, project_id: i64, issue: &CreateIssue) -> Result<GitlabIssue, Error> {
         self.post(&format!("api/v4/projects/{project_id}/issues"), issue)
     }
 
     fn update_issue(
         &self,
-        project_id: i32,
-        issue_iid: i32,
+        project_id: i64,
+        issue_iid: i64,
         update: &UpdateIssue,
     ) -> Result<GitlabIssue, Error> {
         self.put(
@@ -458,7 +458,7 @@ impl IssueEndpoints for GitlabClient {
         )
     }
 
-    fn delete_issue(&self, project_id: i32, issue_iid: i32) -> Result<(), Error> {
+    fn delete_issue(&self, project_id: i64, issue_iid: i64) -> Result<(), Error> {
         self.delete(&format!("api/v4/projects/{project_id}/issues/{issue_iid}"))
     }
 }

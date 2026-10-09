@@ -61,9 +61,12 @@ impl<'input> FromJson<'input> for CiStatus {
     }
 }
 
-impl ToJson for CiStatus {
-    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
-        let s = match self {
+impl CiStatus {
+    /// The wire spelling GitLab uses for this status (also the job `scope`
+    /// filter value).
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
             Self::Created => "created",
             Self::WaitingForResource => "waiting_for_resource",
             Self::Preparing => "preparing",
@@ -78,8 +81,13 @@ impl ToJson for CiStatus {
             Self::Scheduled => "scheduled",
             Self::WaitingForCallback => "waiting_for_callback",
             Self::Unknown => "unknown",
-        };
-        s.write_json(w)
+        }
+    }
+}
+
+impl ToJson for CiStatus {
+    fn write_json<W: json_bourne::JsonWrite + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+        self.as_str().write_json(w)
     }
 }
 
@@ -221,6 +229,24 @@ pub struct JobPipeline {
     pub status: Option<CiStatus>,
 }
 
+/// The child or multi-project pipeline a trigger job started
+/// (`downstream_pipeline` on a trigger job).
+#[derive(Debug, FromJson, ToJson, Clone)]
+#[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[bourne(deny_unknown_fields = false)]
+#[non_exhaustive]
+pub struct DownstreamPipeline {
+    pub id: Id,
+    pub project_id: Option<Id>,
+    #[bourne(rename = "ref")]
+    pub ref_name: Option<String>,
+    pub sha: Option<String>,
+    pub status: Option<CiStatus>,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+    pub web_url: Option<String>,
+}
+
 /// The runner that executed a job.
 #[derive(Debug, FromJson, ToJson, Clone)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
@@ -280,6 +306,8 @@ pub struct Job {
     pub artifacts_file: Option<ArtifactsFile>,
     #[bourne(default)]
     pub artifacts: Vec<JobArtifact>,
+    /// Set only on trigger jobs: the pipeline they started.
+    pub downstream_pipeline: Option<DownstreamPipeline>,
 }
 
 #[cfg(test)]
@@ -327,6 +355,35 @@ mod tests {
         assert_eq!(j.status, CiStatus::Failed);
         assert_eq!(j.artifacts.len(), 1);
         assert_eq!(j.pipeline.unwrap().id, 6);
+    }
+
+    #[test]
+    fn trigger_job_carries_its_downstream_pipeline() {
+        let json = r#"{
+            "id": 7,
+            "status": "pending",
+            "downstream_pipeline": {"id": 5, "sha": "f62a4b2f", "ref": "main", "status": "running"}
+        }"#;
+        let j: Job = parse_str(json).unwrap();
+        let down = j.downstream_pipeline.unwrap();
+        assert_eq!(down.id, 5);
+        assert_eq!(down.status, Some(CiStatus::Running));
+    }
+
+    #[test]
+    fn status_spelling_matches_parsing() {
+        for status in [
+            CiStatus::Failed,
+            CiStatus::WaitingForResource,
+            CiStatus::Manual,
+        ] {
+            let back: CiStatus = parse_str(&json_bourne::to_string(&status).unwrap()).unwrap();
+            assert_eq!(back, status);
+            assert_eq!(
+                json_bourne::to_string(&status).unwrap(),
+                format!("\"{}\"", status.as_str())
+            );
+        }
     }
 
     #[test]

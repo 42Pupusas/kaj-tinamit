@@ -10,9 +10,17 @@
 use kaj_tinamit_client::prelude::*;
 use kaj_tinamit_client::{
     CommitAction, CreateCommit, CreateEnvironment, CreateIssue, CreateLabel, CreateVariable,
-    GitlabClient, IssueQuery, IssueScope, IssueStateFilter, UpdateEnvironment, UpdateIssue,
-    UpdateVariable, VariableFilter,
+    GitlabClient, IssueQuery, IssueScope, IssueStateFilter, JobQuery, ProjectQuery,
+    UpdateEnvironment, UpdateIssue, UpdateVariable, VariableFilter,
 };
+
+/// The projects the token is a member of: the listing every read test
+/// samples from.
+fn member_projects(client: &GitlabClient) -> Vec<kaj_tinamit_client::model::GitlabProject> {
+    client
+        .projects(&ProjectQuery::new().membership())
+        .expect("projects request failed")
+}
 
 /// The project the write tests operate on. Override with `GITLAB_TEST_PROJECT`
 /// (a numeric ID); defaults to the first membership project.
@@ -22,7 +30,7 @@ fn write_test_project(client: &GitlabClient) -> i64 {
     {
         return id;
     }
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(client);
     let project = projects.first().expect("need at least one project");
     i64::from(project.id)
 }
@@ -41,7 +49,7 @@ fn current_user_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn projects_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
     eprintln!("visible projects: {}", projects.len());
     for p in projects.iter().take(10) {
         eprintln!(
@@ -50,6 +58,106 @@ fn projects_smoke() {
             p.path_with_namespace.as_deref().unwrap_or("<no path>")
         );
     }
+}
+
+/// Parses the 0.2 additions against real payloads: the fuller project
+/// model, list filters, forks, hooks, job scopes, test reports, and lint.
+#[test]
+#[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
+fn project_and_ci_additions_smoke() {
+    use kaj_tinamit_client::model::CiStatus;
+    use kaj_tinamit_client::{ProjectOrder, SortDirection};
+
+    let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
+    let recent = client
+        .projects(
+            &ProjectQuery::new()
+                .membership()
+                .archived(false)
+                .order_by(ProjectOrder::LastActivityAt, SortDirection::Desc),
+        )
+        .expect("filtered projects failed");
+    let Some(first) = recent.first() else {
+        eprintln!("no member projects - skipping");
+        return;
+    };
+    let pid = i64::from(first.id);
+    let project = client.project(pid).expect("project failed");
+    eprintln!(
+        "#{} {} default={:?} web={:?} topics={:?} forks={} merge={:?} builds={:?} perms={:?}",
+        project.id,
+        project.path_with_namespace.as_deref().unwrap_or("?"),
+        project.default_branch,
+        project.web_url,
+        project.topics,
+        project.forks_count,
+        project.merge_method,
+        project.builds_access_level,
+        project
+            .permissions
+            .as_ref()
+            .map(|p| p.project_access.is_some()),
+    );
+    assert!(project.web_url.is_some());
+    assert!(project.http_url_to_repo.is_some());
+
+    let owned = client
+        .projects(&ProjectQuery::new().owned().search("a"))
+        .expect("owned search failed");
+    eprintln!("  owned matching 'a': {}", owned.len());
+
+    let forks = client.forks(pid).expect("forks failed");
+    eprintln!("  forks: {}", forks.len());
+
+    match client.project_hooks(pid) {
+        Ok(hooks) => eprintln!("  hooks: {}", hooks.len()),
+        Err(e) => eprintln!("  hooks need Maintainer: {e}"),
+    }
+
+    let failed = client
+        .jobs(pid, &JobQuery::new().with_status(CiStatus::Failed))
+        .expect("scoped jobs failed");
+    assert!(failed.iter().all(|j| j.status == CiStatus::Failed));
+    eprintln!("  failed jobs: {}", failed.len());
+
+    if let Ok(pipes) = client.pipelines(pid, &kaj_tinamit_client::PipelineQuery::new())
+        && let Some(p) = pipes.first()
+    {
+        let pipeline_id = i64::from(p.id);
+        let summary = client
+            .pipeline_test_report_summary(pid, pipeline_id)
+            .expect("test_report_summary failed");
+        let report = client
+            .pipeline_test_report(pid, pipeline_id)
+            .expect("test_report failed");
+        eprintln!(
+            "  pipeline {pipeline_id}: {} tests ({} suites), {} failed",
+            summary.total.count,
+            report.test_suites.len(),
+            report.failed_count
+        );
+        let bridges = client
+            .pipeline_trigger_jobs(pid, pipeline_id, &JobQuery::new())
+            .expect("trigger_jobs failed");
+        eprintln!("  trigger jobs: {}", bridges.len());
+    }
+
+    let lint = client
+        .lint_ci_config(
+            pid,
+            &kaj_tinamit_client::CiLint::new("test:\n  script: echo ok\n"),
+        )
+        .expect("lint failed");
+    eprintln!("  lint valid={} errors={:?}", lint.valid, lint.errors);
+    assert!(lint.valid);
+    let broken = client
+        .lint_ci_config(
+            pid,
+            &kaj_tinamit_client::CiLint::new(".hidden:\n  script: x\n"),
+        )
+        .expect("lint of broken config failed");
+    assert!(!broken.valid);
+    assert!(!broken.errors.is_empty());
 }
 
 #[test]
@@ -75,7 +183,7 @@ fn events_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn project_scoped_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
     let project = projects.first().expect("need at least one project");
     let pid = i64::from(project.id);
     eprintln!(
@@ -93,7 +201,7 @@ fn project_scoped_smoke() {
     eprintln!("  merge requests: {}", mrs.len());
 
     let milestones = client
-        .project_milestones(i32::try_from(i64::from(project.id)).expect("project id fits i32"))
+        .project_milestones(i64::from(project.id))
         .expect("project_milestones request failed");
     eprintln!("  milestones: {}", milestones.len());
 
@@ -110,7 +218,7 @@ fn project_scoped_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn deploy_keys_and_tokens_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
 
     let mut key_hit = false;
     for p in &projects {
@@ -221,7 +329,7 @@ fn runners_smoke() {
     }
 
     // Project-scoped runners for the first project.
-    if let Some(project) = client.projects().expect("projects failed").first() {
+    if let Some(project) = member_projects(&client).first() {
         let pr = client
             .project_runners(i64::from(project.id))
             .expect("project_runners failed");
@@ -235,7 +343,7 @@ fn runners_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn environments_and_deployments_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
 
     let mut env_hit = false;
     let mut dep_hit = false;
@@ -322,7 +430,7 @@ fn snippets_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn releases_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
 
     let mut found = None;
     for p in &projects {
@@ -364,7 +472,7 @@ fn releases_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn ci_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
 
     let mut found = None;
     for p in &projects {
@@ -391,7 +499,7 @@ fn ci_smoke() {
     eprintln!("  pipeline {} status {:?}", detail.id, detail.status);
 
     let jobs = client
-        .pipeline_jobs(pid, pipeline_id)
+        .pipeline_jobs(pid, pipeline_id, &JobQuery::new())
         .expect("pipeline_jobs failed");
     eprintln!("  jobs: {}", jobs.len());
     for j in jobs.iter().take(5) {
@@ -445,7 +553,7 @@ fn labels_smoke() {
         }
     }
 
-    let projects = client.projects().expect("projects failed");
+    let projects = member_projects(&client);
     if let Some(project) = projects.first() {
         let pid = i64::from(project.id);
         let labels = client
@@ -511,7 +619,7 @@ fn groups_and_members_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn repository_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects request failed");
+    let projects = member_projects(&client);
 
     // Find a project whose default branch actually has a tree.
     let mut chosen = None;
@@ -640,7 +748,7 @@ fn search_smoke() {
     eprintln!("global MR search hits: {}", mrs.len());
 
     // Project-scoped code search on the first membership project.
-    if let Some(project) = client.projects().expect("projects failed").first() {
+    if let Some(project) = member_projects(&client).first() {
         let pid = i64::from(project.id);
         let blobs = client
             .project_search_blobs(pid, "fn")
@@ -675,12 +783,9 @@ fn issues_statistics_smoke() {
         c.all, c.opened, c.closed
     );
 
-    if let Some(project) = client.projects().expect("projects failed").first() {
+    if let Some(project) = member_projects(&client).first() {
         let pstats = client
-            .project_issues_statistics(
-                i32::try_from(i64::from(project.id)).expect("project id fits i32"),
-                &IssueQuery::new(),
-            )
+            .project_issues_statistics(i64::from(project.id), &IssueQuery::new())
             .expect("project_issues_statistics failed");
         let pc = pstats.counts();
         eprintln!(
@@ -720,7 +825,7 @@ fn iterations_smoke() {
         }
     }
 
-    if let Some(project) = client.projects().expect("projects failed").first() {
+    if let Some(project) = member_projects(&client).first() {
         match client.project_iterations(i64::from(project.id)) {
             Ok(iters) => eprintln!("project #{} iterations: {}", project.id, iters.len()),
             Err(e) => eprintln!("project iterations not accessible: {e}"),
@@ -734,7 +839,7 @@ fn iterations_smoke() {
 fn boards_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
 
-    if let Some(project) = client.projects().expect("projects failed").first() {
+    if let Some(project) = member_projects(&client).first() {
         let pid = i64::from(project.id);
         let boards = client.project_boards(pid).expect("project_boards failed");
         eprintln!("project #{pid} boards: {}", boards.len());
@@ -891,7 +996,7 @@ fn metadata_and_namespaces_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn commit_statuses_and_artifacts_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects failed");
+    let projects = member_projects(&client);
 
     for p in projects.iter().take(20) {
         let pid = i64::from(p.id);
@@ -929,7 +1034,7 @@ fn commit_statuses_and_artifacts_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn pipeline_schedules_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let projects = client.projects().expect("projects failed");
+    let projects = member_projects(&client);
 
     for p in projects.iter().take(20) {
         let pid = i64::from(p.id);
@@ -960,7 +1065,7 @@ fn pipeline_schedules_smoke() {
 #[ignore = "requires GITLAB_URL + GITLAB_PAT and network"]
 fn protected_smoke() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
-    let Some(project) = client.projects().expect("projects failed").first().cloned() else {
+    let Some(project) = member_projects(&client).first().cloned() else {
         eprintln!("no projects - skipping");
         return;
     };
@@ -1064,11 +1169,9 @@ fn group_releases_and_wikis_smoke() {
 fn write_issue_lifecycle() {
     let client = GitlabClient::from_env().expect("GITLAB_URL/GITLAB_PAT must be set");
     let pid = write_test_project(&client);
-    let pid32 = i32::try_from(pid).expect("project id fits i32");
-
     let created = client
         .create_issue(
-            pid32,
+            pid,
             &CreateIssue::new("[kaj-tinamit] write smoke test")
                 .with_description("Created by the kaj-tinamit-client write test.")
                 .with_labels(&["kaj-tinamit-test"]),
@@ -1096,8 +1199,8 @@ fn write_issue_lifecycle() {
 
     let updated = client
         .update_issue(
-            pid32,
-            i32::try_from(i64::from(created.iid)).expect("issue iid fits i32"),
+            pid,
+            iid,
             &UpdateIssue::new()
                 .with_title("[kaj-tinamit] write smoke test (edited)")
                 .close(),
@@ -1108,10 +1211,7 @@ fn write_issue_lifecycle() {
     client.delete_issue_note(pid, iid, note.id.into()).ok();
     // Deleting an issue requires the Owner role; tolerate a 403 when the
     // test token lacks it (the issue is already closed above).
-    match client.delete_issue(
-        pid32,
-        i32::try_from(i64::from(created.iid)).expect("issue iid fits i32"),
-    ) {
+    match client.delete_issue(pid, iid) {
         Ok(()) => eprintln!("  deleted issue !{}", created.iid),
         Err(e) => eprintln!("  delete_issue skipped (needs Owner): {e}"),
     }
