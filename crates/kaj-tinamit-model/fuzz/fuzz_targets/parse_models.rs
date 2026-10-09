@@ -8,18 +8,18 @@
 //!
 //! Run: `cargo +nightly fuzz run parse_models`
 
-use kaj_tinamit::{
-    AwardEmoji, BlameRange, Blob, Board, BoardList, Branch, Changelog, CommitDiff, CommitStatus,
-    CommitWithDiffs, DeployKey, DeployToken, Deployment, Discussion, Environment, Epic, EpicIssue,
-    FileMutationResult, GitlabCommit, GitlabEvent, GitlabGroup, GitlabIssue, GitlabProject,
-    GitlabUser, IssueLink, IssueLinkResult, IssueStatistics, Iteration, IterationCadence, Job,
-    Label, Member, MergeRequest, MergeRequestApprovals, MergeRequestChanges, Metadata,
-    NamespaceListing, PipelineDetail, PipelineSchedule, PipelineSummary, ProtectedBranch,
-    ProtectedEnvironment, ProtectedTag, RefCommit, Release, RepositoryFile, ResourceLabelEvent,
-    ResourceMilestoneEvent, ResourceStateEvent, Runner, RunnerDetail, SearchBlob, Snippet, Tag,
-    Todo, TreeEntry, WikiPage,
-};
 use json_bourne::parse;
+use kaj_tinamit::{
+    AwardEmoji, BlameRange, Blob, Board, BoardList, Branch, Changelog, CiLintResult, CiVariable,
+    CommitDiff, CommitStatus, CommitWithDiffs, DeployKey, DeployToken, Deployment, Discussion,
+    Environment, Epic, EpicIssue, FileMutationResult, GitlabCommit, GitlabEvent, GitlabGroup,
+    GitlabIssue, GitlabProject, GitlabUser, IssueLink, IssueLinkResult, IssueStatistics, Iteration,
+    IterationCadence, Job, Label, Member, MergeRequest, MergeRequestApprovals, MergeRequestChanges,
+    Metadata, NamespaceListing, PipelineDetail, PipelineSchedule, PipelineSummary, ProjectHook,
+    ProtectedBranch, ProtectedEnvironment, ProtectedTag, RefCommit, Release, RepositoryFile,
+    ResourceLabelEvent, ResourceMilestoneEvent, ResourceStateEvent, Runner, RunnerDetail,
+    SearchBlob, Snippet, Tag, TestReport, TestReportSummary, Todo, TreeEntry, WikiPage,
+};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {
@@ -88,6 +88,11 @@ fuzz_target!(|data: &[u8]| {
     let _ = parse::<Discussion>(data);
     let _ = parse::<MergeRequestChanges>(data);
     let _ = parse::<MergeRequestApprovals>(data);
+    let _ = parse::<CiVariable>(data);
+    let _ = parse::<ProjectHook>(data);
+    let _ = parse::<TestReport>(data);
+    let _ = parse::<TestReportSummary>(data);
+    let _ = parse::<CiLintResult>(data);
 
     // Arrays of the most common list types, as GitLab returns them.
     let _ = parse::<Vec<GitlabProject>>(data);

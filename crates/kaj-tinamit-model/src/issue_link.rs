@@ -48,7 +48,7 @@ impl ToJson for IssueLinkType {
 ///
 /// The payload is a full issue shape augmented with the link metadata; we
 /// model the fields useful for dependency analysis rather than re-embedding
-/// the entire [`GitlabIssue`](crate::GitlabIssue).
+/// the entire [`GitlabIssue`].
 #[derive(Debug, FromJson, ToJson, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 #[bourne(deny_unknown_fields = false)]

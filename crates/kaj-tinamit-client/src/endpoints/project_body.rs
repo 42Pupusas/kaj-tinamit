@@ -256,7 +256,7 @@ pub struct ForkProject {
     pub description: Option<String>,
     #[bourne(skip_if_none)]
     pub visibility: Option<Visibility>,
-    /// Only fork this branch (comma-separated list, or empty for all).
+    /// Comma-separated branches to fork; every branch when unset.
     #[bourne(skip_if_none)]
     pub branches: Option<String>,
 }

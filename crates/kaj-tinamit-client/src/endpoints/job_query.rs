@@ -7,8 +7,9 @@ use crate::query::QueryParams;
 
 const SCOPE_KEY: &str = "scope%5B%5D";
 
-/// Filters for [`JobEndpoints::jobs`](super::JobEndpoints::jobs) and
-/// [`JobEndpoints::pipeline_jobs`](super::JobEndpoints::pipeline_jobs).
+/// Filters for [`JobEndpoints::jobs`](super::JobEndpoints::jobs),
+/// [`JobEndpoints::pipeline_jobs`](super::JobEndpoints::pipeline_jobs), and
+/// [`JobEndpoints::pipeline_trigger_jobs`](super::JobEndpoints::pipeline_trigger_jobs).
 /// Empty by default, which returns jobs in every status.
 #[derive(Debug, Default, Clone)]
 pub struct JobQuery {
@@ -29,7 +30,7 @@ impl JobQuery {
     }
 
     /// Include jobs that were superseded by a retry. Honoured only by the
-    /// pipeline-scoped listing.
+    /// pipeline-scoped listings.
     #[must_use]
     pub fn include_retried(mut self) -> Self {
         self.params.push_flag("include_retried", true);

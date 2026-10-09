@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-json-bourne = { path = "../../../../bourne/crates/bourne", features = ["derive"] }
+json-bourne = { version = "0.3", features = ["derive"] }
 kaj-tinamit = { path = ".." }
 
 [[bin]]

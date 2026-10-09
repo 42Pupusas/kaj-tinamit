@@ -20,8 +20,8 @@ API-surface churn.
 
 ## In-house / external dependencies
 
-- **In-house** (path deps in `../`): `json-bourne` (JSON), `xibalba-client`
-  + `xibalba-proto` (HTTP).
+- **In-house** (published on crates.io): `json-bourne` (JSON),
+  `xibalba-client` + `xibalba-proto` (HTTP).
 - **External** (crates.io, unavoidable for TLS): `rustls`, `webpki-roots`,
   `rustls-rustcrypto`.
 
@@ -54,7 +54,8 @@ live-verified against a real instance. Write operations (`POST`/`PUT`/
 | Category | Endpoint trait(s) | Writes |
 |----------|-------------------|:------:|
 | Users | `UserEndpoints` | |
-| Projects | `ProjectEndpoints` | ✎ create/update/delete, archive, star |
+| Projects | `ProjectEndpoints` (+ `ProjectQuery`) | ✎ create/update/delete, archive, star, fork/unlink, transfer, share/unshare with group |
+| Project webhooks | `HookEndpoints` | ✎ add/edit/delete, fire test event |
 | Issues | `IssueEndpoints` (+ `IssueQuery`) | ✎ create/update/delete |
 | Merge requests | `MergeRequestEndpoints` (+ `MergeRequestQuery`) | ✎ create/update/accept/delete |
 | Commits | `CommitEndpoints` | ✎ create commit, cherry-pick, revert, set status |
@@ -62,9 +63,11 @@ live-verified against a real instance. Write operations (`POST`/`PUT`/
 | Events | `EventEndpoints` | |
 | Wikis | `WikiEndpoints` | ✎ create/update/delete (project + group) |
 | Repository (tree/blobs/branches/tags/files/blame) | `RepositoryEndpoints` | ✎ files, branches, tags |
-| Groups & members | `GroupEndpoints`, `MemberEndpoints` | ✎ add/update/remove member |
+| Groups & members | `GroupEndpoints`, `MemberEndpoints` | ✎ create/update/delete group; add/update/remove member |
 | Labels | `LabelEndpoints` | ✎ create/update/delete (project + group) |
-| CI (pipelines/jobs) | `PipelineEndpoints` (+ `PipelineQuery`), `JobEndpoints` | ✎ create/retry/cancel/delete pipeline; play/retry/cancel/erase job |
+| CI (pipelines/jobs) | `PipelineEndpoints` (+ `PipelineQuery`), `JobEndpoints` (+ `JobQuery`) | ✎ create/retry/cancel/delete pipeline; play (with variables)/retry/cancel/erase job |
+| Pipeline test reports | `TestReportEndpoints` | |
+| CI lint | `LintEndpoints` | validates config (POST, no side effects) |
 | Pipeline schedules | `PipelineScheduleEndpoints` | ✎ create/update/delete/play/take-ownership |
 | Releases | `ReleaseEndpoints` | ✎ create/update/delete |
 | Snippets | `SnippetEndpoints`, `ProjectSnippetEndpoints` | ✎ create/update/delete |
